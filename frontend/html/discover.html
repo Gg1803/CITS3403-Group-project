@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Discover Events</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/discover.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="../js/discover.js" defer></script>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo-group" onclick="goTo('dashboard.html')">
+      <div class="logo-icon"><i data-lucide="calendar"></i></div>
+      <div class="logo-text">Event<span>ure</span></div>
+    </div>
+    <div class="nav-icons">
+      <span onclick="goTo('dashboard.html')"><i data-lucide="home"></i></span>
+      <span class="nav-active" onclick="goTo('discover.html')"><i data-lucide="compass"></i></span>
+      <span onclick="goTo('invites.html')"><i data-lucide="mail"></i></span>
+      <span onclick="goTo('profile.html')"><i data-lucide="user"></i></span>
+      <span onclick="goTo('login.html')"><i data-lucide="log-out"></i></span>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>Discover</h1>
+      <p>Discover and join public events happening around you</p>
+    </div>
+    <!-- FILTER -->
+    <div class="filter-group">
+      <div class="filter-icon"><i data-lucide="sliders-horizontal"></i></div>
+      <select id="typeFilter" onchange="filterEvents()">
+        <option value="all">All Types</option>
+        <option value="Beach day">Beach day</option>
+        <option value="House party">House party</option>
+        <option value="Game night">Game night</option>
+        <option value="Hiking/Outdoor">Hiking / Outdoor</option>
+        <option value="Study session">Study session</option>
+        <option value="Sport events">Sport events</option>
+        <option value="Food/dining">Food / Dining</option>
+        <option value="Movie night">Movie night</option>
+        <option value="Concert/music">Concert / Music</option>
+        <option value="Custom">Custom</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- RESULTS COUNT -->
+  <p id="resultCount" class="result-count">Showing all events</p>
+
+  <!-- GRID -->
+  <div class="grid" id="discoverGrid"></div>
+
+  <!-- EMPTY STATE -->
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <i data-lucide="search-x"></i>
+    <p>No events found for that filter.</p>
+  </div>
+
+</div>
+
+</body>
+</html>
