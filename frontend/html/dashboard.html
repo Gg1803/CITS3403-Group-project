@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Events</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="../js/dashboard.js" defer></script>
+</head>
+
+<body>
+  <div class="container">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="logo-group">
+        <div class="logo-icon"><i data-lucide="calendar"></i></div>
+        <div class="logo-text">Event<span>ure</span></div>
+      </div>
+      <div class="nav-icons">
+        <i data-lucide="home"    onclick="goTo('dashboard.html')"></i>
+        <i data-lucide="compass" onclick="goTo('discover.html')"></i>
+        <i data-lucide="mail"    onclick="goTo('invites.html')"></i>
+        <i data-lucide="user"    onclick="goTo('profile.html')"></i>
+        <i data-lucide="log-out" onclick="goTo('login.html')"></i>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="header">
+      <div>
+        <h1>My Events</h1>
+        <p id="eventCount">You have 0 upcoming events</p>
+      </div>
+      <button class="create-btn" onclick="openModal()">+ New Event</button>
+    </div>
+
+    <!-- GRID -->
+    <div class="grid" id="eventGrid"></div>
+
+  </div>
+
+  <!-- MODAL (shared for create + edit) -->
+  <div class="modal" id="modal">
+    <div class="modal-content card" onclick="event.stopPropagation()">
+      <h2>Create Event</h2>
+
+      <label>Event Title</label>
+      <input id="title">
+
+      <label>Event Type</label>
+      <select id="type" onchange="handleTypeChange()">
+        <option>Beach day</option>
+        <option>House party</option>
+        <option>Game night</option>
+        <option>Hiking/Outdoor</option>
+        <option>Study session</option>
+        <option>Sport events</option>
+        <option>Food/dining</option>
+        <option>Movie night</option>
+        <option>Concert/music</option>
+        <option>Custom</option>
+      </select>
+
+      <input id="customType" placeholder="Enter custom type" style="display:none;">
+
+      <label>Date</label>
+      <input type="date" id="date">
+
+      <label>Location</label>
+      <input id="location">
+
+      <label>Description</label>
+      <textarea id="desc" rows="3" oninput="updateCharCount()" placeholder="Optional — max 120 characters"></textarea>
+      <div class="char-count-row">
+        <span id="charCount" class="char-count">0/120</span>
+      </div>
+
+      <label style="display:flex; align-items:center; justify-content:space-between;">
+        Public Event
+        <label class="switch">
+          <input type="checkbox" id="isPublic">
+          <span class="slider"></span>
+        </label>
+      </label>
+
+      <button class="create-btn" id="modalSubmitBtn" onclick="submitEvent()">Create</button>
+    </div>
+  </div>
+</body>
+</html>
