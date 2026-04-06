@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invitations</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="invitation_page.css">
+</head>
+<body>
+  <div class="page-container">
+    <div class="main-shell">
+      <header class="page-header">
+        <div class="header-left">
+          <p class="small-label">MY EVENTS</p>
+          <h1 class="page-title">Invitations</h1>
+          <p class="page-subtitle">
+            View events you have been invited to, check details, and respond quickly.
+          </p>
+        </div>
+
+        <div class="header-actions">
+          <button class="nav-btn" type="button" aria-label="Previous">←</button>
+          <button class="nav-btn" type="button" aria-label="Next">→</button>
+        </div>
+      </header>
+
+      <section class="hero-banner card">
+        <div class="hero-copy">
+          <span class="hero-chip">Invited Events</span>
+          <h2>Stay on top of your upcoming invitations</h2>
+          <p>
+            Review pending invites, sort them, filter them, and open full details before you decide.
+          </p>
+        </div>
+
+        <div class="hero-stats">
+          <div class="hero-stat-box">
+            <span class="hero-stat-label">This Week</span>
+            <span class="hero-stat-value" id="thisWeekCount">0</span>
+          </div>
+
+          <div class="hero-stat-box">
+            <span class="hero-stat-label">Need Response</span>
+            <span class="hero-stat-value" id="needResponseCount">0</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="summary-grid">
+        <div class="card summary-card">
+          <span class="summary-label">Total Invitations</span>
+          <span class="summary-value" id="totalInvitations">0</span>
+        </div>
+
+        <div class="card summary-card">
+          <span class="summary-label">Joined</span>
+          <span class="summary-value" id="joinedCount">0</span>
+        </div>
+
+        <div class="card summary-card">
+          <span class="summary-label">Pending</span>
+          <span class="summary-value" id="pendingCount">0</span>
+        </div>
+
+        <div class="card summary-card">
+          <span class="summary-label">Declined</span>
+          <span class="summary-value" id="declinedCount">0</span>
+        </div>
+      </section>
+
+      <section class="card filter-section">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">Search & Filter</h2>
+            <p class="section-subtitle">Find invitations faster by event name, location, type, status, or date.</p>
+          </div>
+        </div>
+
+        <div class="filter-grid">
+          <div class="field-group">
+            <label for="searchInput">Search event</label>
+            <input id="searchInput" type="text" placeholder="Search by event name or location" />
+          </div>
+
+          <div class="field-group">
+            <label for="typeFilter">Type</label>
+            <select id="typeFilter">
+              <option value="all">All Types</option>
+              <option value="Social">Social</option>
+              <option value="Workshop">Workshop</option>
+              <option value="Sports">Sports</option>
+              <option value="Study">Study</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="statusFilter">Status</label>
+            <select id="statusFilter">
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="joined">Joined</option>
+              <option value="declined">Declined</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="dateFilter">Date From</label>
+            <input id="dateFilter" type="date" />
+          </div>
+
+          <div class="field-group">
+            <label for="sortFilter">Sort By</label>
+            <select id="sortFilter">
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="name-asc">Name A-Z</option>
+              <option value="name-desc">Name Z-A</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-row">
+        <button class="tab-btn active" data-tab="all" type="button">All</button>
+        <button class="tab-btn" data-tab="pending" type="button">Pending</button>
+        <button class="tab-btn" data-tab="joined" type="button">Joined</button>
+        <button class="tab-btn" data-tab="declined" type="button">Declined</button>
+      </section>
+
+      <section class="list-head">
+        <div>
+          <h2 class="main-section-title">Your Invitations</h2>
+          <p class="main-section-subtitle">All events currently shared with you.</p>
+        </div>
+
+        <div class="results-pill">
+          <span id="resultsCount">0</span> results
+        </div>
+      </section>
+
+      <section class="invitation-grid" id="invitationGrid"></section>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal-overlay hidden" id="detailModal">
+    <div class="modal card">
+      <div class="modal-header">
+        <h3 id="modalTitle">Event Detail</h3>
+        <button class="close-btn" id="closeModalBtn" type="button">×</button>
+      </div>
+
+      <div class="modal-body" id="modalBody"></div>
+
+      <div class="modal-footer">
+        <a id="realDetailLink" class="secondary-btn modal-link-btn" href="event_details.html">Open Event Details</a>
+        <button class="action-btn" id="modalJoinBtn" type="button">Join</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="invitation.js"></script>
+</body>
+</html>
