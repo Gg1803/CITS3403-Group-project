@@ -15,7 +15,17 @@ const gradients = {
   "Custom":         "gradient-dark"
 };
 
-let events = [];
+let events = [
+  {
+    title: "Beach Day Bonanza",
+    type: "Beach day",
+    date: "2026-03-25",
+    location: "Cottesloe Beach",
+    desc: "Sun, games, snacks, and chill vibes by the ocean",
+    participants: 5,
+    public: true
+  }
+];
 
 /* NAV */
 function goTo(page) { window.location.href = page; }
