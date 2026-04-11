@@ -14,7 +14,7 @@
 
   <link rel="stylesheet" href="event_details.css" />
 </head>
-<body>
+<body class="theme-beach">
   <div class="page-container">
     <div class="main-shell">
       <header class="page-header">
@@ -24,8 +24,8 @@
         </div>
 
         <div class="header-actions">
-          <button class="nav-btn" type="button" aria-label="Previous">←</button>
-          <button class="nav-btn" type="button" aria-label="Next">→</button>
+          <button class="nav-btn nav-btn-left" type="button" aria-label="Previous">←</button>
+          <button class="nav-btn nav-btn-right" type="button" aria-label="Next">→</button>
         </div>
       </header>
 
@@ -45,6 +45,18 @@
           </div>
 
           <div class="field-group">
+            <label for="eventType">Event Type</label>
+            <select id="eventType">
+              <option value="beach" selected>Beach</option>
+              <option value="birthday">Birthday</option>
+              <option value="formal">Formal</option>
+              <option value="festival">Festival</option>
+              <option value="sports">Sports</option>
+              <option value="study">Study</option>
+            </select>
+          </div>
+
+          <div class="field-group">
             <label for="eventDate">Date</label>
             <input id="eventDate" type="date" value="2026-03-25" />
           </div>
@@ -57,13 +69,13 @@
       </section>
 
       <div class="dashboard-grid">
-        <section class="card panel">
+        <section class="card panel panel-task">
           <div class="panel-header">
             <div>
               <h2>Task Board</h2>
               <p>Organize everything for your event</p>
             </div>
-            <button class="action-btn" id="openTaskModal" type="button">+ Add Task</button>
+            <button class="action-btn btn-task" id="openTaskModal" type="button">+ Add Task</button>
           </div>
 
           <div class="mini-progress-row">
@@ -79,13 +91,13 @@
           </div>
         </section>
 
-        <section class="card panel">
+        <section class="card panel panel-timeline">
           <div class="panel-header">
             <div>
               <h2>Timeline</h2>
               <p>Plan the flow of your event</p>
             </div>
-            <button class="action-btn" id="openTimelineModal" type="button">+ Add</button>
+            <button class="action-btn btn-timeline" id="openTimelineModal" type="button">+ Add</button>
           </div>
 
           <div id="timelineList" class="list-area">
@@ -93,13 +105,13 @@
           </div>
         </section>
 
-        <section class="card panel">
+        <section class="card panel panel-participants">
           <div class="panel-header">
             <div>
               <h2>Participants</h2>
               <p>Invite and manage attendees</p>
             </div>
-            <button class="action-btn" id="openParticipantModal" type="button">Invite</button>
+            <button class="action-btn btn-participants" id="openParticipantModal" type="button">Invite</button>
           </div>
 
           <div id="participantList" class="list-area">
@@ -107,22 +119,25 @@
           </div>
         </section>
 
-        <section class="card panel">
+        <section class="card panel poll-card panel-poll">
           <div class="panel-header">
             <div>
               <h2>Poll</h2>
               <p>Collect preferences</p>
             </div>
-            <button class="action-btn" id="openPollModal" type="button">Create</button>
+            <button class="action-btn btn-poll" id="openPollModal" type="button">Create</button>
           </div>
 
-          <div class="mini-progress-row">
-            <span id="pollVoteCount">0/0</span>
+          <div class="poll-nav">
+            <button id="prevPollBtn" type="button" aria-label="Previous poll">←</button>
+            <button id="nextPollBtn" type="button" aria-label="Next poll">→</button>
           </div>
 
-          <div id="pollContainer" class="list-area">
+          <div id="pollContainer" class="poll-content">
             <p class="empty-state">No polls created yet.</p>
           </div>
+
+          <div class="poll-footer" id="pollFooter">0/0</div>
         </section>
       </div>
     </div>
@@ -149,7 +164,7 @@
       </div>
 
       <div class="modal-footer">
-        <button class="action-btn" id="addTaskBtn" type="button">Add</button>
+        <button class="action-btn btn-task" id="addTaskBtn" type="button">Add</button>
       </div>
     </div>
   </div>
@@ -170,7 +185,7 @@
       </div>
 
       <div class="modal-footer">
-        <button class="action-btn" id="addTimelineBtn" type="button">Add</button>
+        <button class="action-btn btn-timeline" id="addTimelineBtn" type="button">Add</button>
       </div>
     </div>
   </div>
@@ -191,7 +206,7 @@
       </div>
 
       <div class="modal-footer">
-        <button class="action-btn" id="addParticipantBtn" type="button">Invite</button>
+        <button class="action-btn btn-participants" id="addParticipantBtn" type="button">Invite</button>
       </div>
     </div>
   </div>
@@ -226,7 +241,7 @@
       </div>
 
       <div class="modal-footer">
-        <button class="action-btn" id="createPollBtn" type="button">Create Poll</button>
+        <button class="action-btn btn-poll" id="createPollBtn" type="button">Create Poll</button>
       </div>
     </div>
   </div>

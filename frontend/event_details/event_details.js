@@ -1,4 +1,5 @@
 const eventTitleInput = document.getElementById("eventTitle");
+const eventTypeInput = document.getElementById("eventType");
 const eventDateInput = document.getElementById("eventDate");
 const eventLocationInput = document.getElementById("eventLocation");
 
@@ -11,10 +12,10 @@ const taskList = document.getElementById("taskList");
 const timelineList = document.getElementById("timelineList");
 const participantList = document.getElementById("participantList");
 const pollContainer = document.getElementById("pollContainer");
+const pollFooter = document.getElementById("pollFooter");
 
 const taskProgressCount = document.getElementById("taskProgressCount");
 const taskProgressFill = document.getElementById("taskProgressFill");
-const pollVoteCount = document.getElementById("pollVoteCount");
 
 const openTaskModal = document.getElementById("openTaskModal");
 const openTimelineModal = document.getElementById("openTimelineModal");
@@ -40,18 +41,26 @@ const pollQuestionInput = document.getElementById("pollQuestion");
 const pollOptionsWrapper = document.getElementById("pollOptionsWrapper");
 const addPollOptionFieldBtn = document.getElementById("addPollOptionField");
 const createPollBtn = document.getElementById("createPollBtn");
+const prevPollBtn = document.getElementById("prevPollBtn");
+const nextPollBtn = document.getElementById("nextPollBtn");
 
 let tasks = [];
 let timelineSteps = [];
 let participants = [];
-let currentPoll = null;
+let polls = [];
+let currentPollIndex = 0;
+let votedPolls = new Set();
 
 function formatDate(dateString) {
   if (!dateString) return "-";
-
   const date = new Date(dateString);
   const options = { day: "2-digit", month: "short", year: "numeric" };
   return date.toLocaleDateString("en-GB", options);
+}
+
+function updateTheme() {
+  const selectedType = eventTypeInput.value || "beach";
+  document.body.className = `theme-${selectedType}`;
 }
 
 function updateTopInfo() {
@@ -59,6 +68,7 @@ function updateTopInfo() {
   displayEventDate.textContent = formatDate(eventDateInput.value);
   displayEventLocation.textContent = eventLocationInput.value.trim() || "-";
   displayParticipantCount.textContent = participants.length;
+  updateTheme();
 }
 
 function openModal(modal) {
@@ -92,10 +102,9 @@ document.querySelectorAll(".modal-overlay").forEach((overlay) => {
 function updateTaskProgress() {
   const total = tasks.length;
   const completed = tasks.filter((task) => task.completed).length;
+  const percent = total === 0 ? 0 : (completed / total) * 100;
 
   taskProgressCount.textContent = `${completed}/${total}`;
-
-  const percent = total === 0 ? 0 : (completed / total) * 100;
   taskProgressFill.style.width = `${percent}%`;
 }
 
@@ -118,20 +127,17 @@ function renderTasks() {
         <div class="item-subtitle">Assigned to: ${task.assignedTo || "Not assigned"}</div>
       </div>
       <div class="item-actions">
-        <button class="icon-btn task-complete" type="button" title="Complete">✓</button>
-        <button class="icon-btn task-delete" type="button" title="Delete">🗑</button>
+        <button class="icon-btn task-complete" type="button">Done</button>
+        <button class="remove-btn task-delete" type="button">Remove</button>
       </div>
     `;
 
-    const completeBtn = item.querySelector(".task-complete");
-    const deleteBtn = item.querySelector(".task-delete");
-
-    completeBtn.addEventListener("click", () => {
+    item.querySelector(".task-complete").addEventListener("click", () => {
       tasks[index].completed = !tasks[index].completed;
       renderTasks();
     });
 
-    deleteBtn.addEventListener("click", () => {
+    item.querySelector(".task-delete").addEventListener("click", () => {
       tasks.splice(index, 1);
       renderTasks();
     });
@@ -160,7 +166,7 @@ function renderTimeline() {
         <div class="item-subtitle">${step}</div>
       </div>
       <div class="item-actions">
-        <button class="icon-btn timeline-delete" type="button" title="Delete">🗑</button>
+        <button class="remove-btn timeline-delete" type="button">Remove</button>
       </div>
     `;
 
@@ -192,7 +198,7 @@ function renderParticipants() {
         <div class="item-subtitle">Invited participant</div>
       </div>
       <div class="item-actions">
-        <button class="icon-btn participant-delete" type="button" title="Delete">🗑</button>
+        <button class="remove-btn participant-delete" type="button">Remove</button>
       </div>
     `;
 
@@ -207,28 +213,59 @@ function renderParticipants() {
   updateTopInfo();
 }
 
+function resetPollForm() {
+  pollQuestionInput.value = "";
+  pollOptionsWrapper.innerHTML = `
+    <div class="field-group poll-option-field">
+      <label>Option 1</label>
+      <input type="text" class="poll-option-input" />
+    </div>
+    <div class="field-group poll-option-field">
+      <label>Option 2</label>
+      <input type="text" class="poll-option-input" />
+    </div>
+  `;
+}
+
+function addPollOptionField() {
+  const currentCount = pollOptionsWrapper.querySelectorAll(".poll-option-input").length + 1;
+
+  const newField = document.createElement("div");
+  newField.className = "field-group poll-option-field";
+  newField.innerHTML = `
+    <label>Option ${currentCount}</label>
+    <input type="text" class="poll-option-input" />
+  `;
+
+  pollOptionsWrapper.appendChild(newField);
+}
+
 function renderPoll() {
   pollContainer.innerHTML = "";
 
-  if (!currentPoll) {
+  if (polls.length === 0) {
     pollContainer.innerHTML = `<p class="empty-state">No polls created yet.</p>`;
-    pollVoteCount.textContent = "0/0";
+    pollFooter.textContent = "0/0";
+    prevPollBtn.disabled = true;
+    nextPollBtn.disabled = true;
     return;
   }
 
-  const totalVotes = currentPoll.options.reduce((sum, option) => sum + option.votes, 0);
-  pollVoteCount.textContent = `${totalVotes}/${currentPoll.options.length}`;
+  const poll = polls[currentPollIndex];
+  const totalVotes = poll.options.reduce((sum, option) => sum + option.votes, 0);
 
   const questionBox = document.createElement("div");
   questionBox.className = "poll-question-box";
-  questionBox.innerHTML = `<div class="poll-question-title">${currentPoll.question}</div>`;
+  questionBox.innerHTML = `<div class="poll-question-title">${poll.question}</div>`;
   pollContainer.appendChild(questionBox);
 
   const optionsList = document.createElement("div");
   optionsList.className = "poll-options-list";
 
-  currentPoll.options.forEach((option, index) => {
-    const percent = totalVotes === 0 ? 0 : Math.round((option.votes / totalVotes) * 100);
+  poll.options.forEach((option, index) => {
+    const actualPercent = totalVotes === 0 ? 0 : Math.round((option.votes / totalVotes) * 100);
+    const visiblePercent = totalVotes === 0 ? 12 : Math.max(actualPercent, 6);
+    const colorClass = `color-${(index % 6) + 1}`;
 
     const optionEl = document.createElement("div");
     optionEl.className = "poll-option-display";
@@ -236,23 +273,49 @@ function renderPoll() {
     optionEl.innerHTML = `
       <div class="poll-option-top">
         <span class="poll-option-name">${option.name}</span>
-        <span class="poll-option-votes">${option.votes} votes</span>
+        <span class="poll-option-votes">${option.votes} votes • ${actualPercent}%</span>
       </div>
       <div class="poll-bar">
-        <div class="poll-bar-fill" style="width: ${percent}%"></div>
+        <div class="poll-fill ${colorClass}" style="width: ${visiblePercent}%"></div>
       </div>
       <button class="vote-btn" type="button">Vote</button>
     `;
 
-    optionEl.querySelector(".vote-btn").addEventListener("click", () => {
-      currentPoll.options[index].votes += 1;
-      renderPoll();
-    });
+    const voteBtn = optionEl.querySelector(".vote-btn");
+
+    if (votedPolls.has(currentPollIndex)) {
+      voteBtn.disabled = true;
+      voteBtn.textContent = "Voted";
+    } else {
+      voteBtn.addEventListener("click", () => {
+        polls[currentPollIndex].options[index].votes += 1;
+        votedPolls.add(currentPollIndex);
+        renderPoll();
+      });
+    }
 
     optionsList.appendChild(optionEl);
   });
 
   pollContainer.appendChild(optionsList);
+
+  pollFooter.textContent = `${currentPollIndex + 1}/${polls.length}`;
+  prevPollBtn.disabled = currentPollIndex === 0;
+  nextPollBtn.disabled = currentPollIndex === polls.length - 1;
+}
+
+function nextPoll() {
+  if (currentPollIndex < polls.length - 1) {
+    currentPollIndex += 1;
+    renderPoll();
+  }
+}
+
+function prevPoll() {
+  if (currentPollIndex > 0) {
+    currentPollIndex -= 1;
+    renderPoll();
+  }
 }
 
 addTaskBtn.addEventListener("click", () => {
@@ -295,18 +358,7 @@ addParticipantBtn.addEventListener("click", () => {
   renderParticipants();
 });
 
-addPollOptionFieldBtn.addEventListener("click", () => {
-  const currentCount = pollOptionsWrapper.querySelectorAll(".poll-option-input").length;
-
-  const newField = document.createElement("div");
-  newField.className = "field-group poll-option-field";
-  newField.innerHTML = `
-    <label>Option ${currentCount + 1}</label>
-    <input type="text" class="poll-option-input" />
-  `;
-
-  pollOptionsWrapper.appendChild(newField);
-});
+addPollOptionFieldBtn.addEventListener("click", addPollOptionField);
 
 createPollBtn.addEventListener("click", () => {
   const question = pollQuestionInput.value.trim();
@@ -320,30 +372,27 @@ createPollBtn.addEventListener("click", () => {
       votes: 0
     }));
 
-  if (!question || options.length < 2) return;
+  if (!question || options.length < 2) {
+    alert("Question and at least 2 options are required.");
+    return;
+  }
 
-  currentPoll = {
+  polls.push({
     question,
     options
-  };
+  });
 
-  pollQuestionInput.value = "";
-  pollOptionsWrapper.innerHTML = `
-    <div class="field-group poll-option-field">
-      <label>Option 1</label>
-      <input type="text" class="poll-option-input" />
-    </div>
-    <div class="field-group poll-option-field">
-      <label>Option 2</label>
-      <input type="text" class="poll-option-input" />
-    </div>
-  `;
-
+  currentPollIndex = polls.length - 1;
+  resetPollForm();
   closeModal(pollModal);
   renderPoll();
 });
 
+prevPollBtn.addEventListener("click", prevPoll);
+nextPollBtn.addEventListener("click", nextPoll);
+
 eventTitleInput.addEventListener("input", updateTopInfo);
+eventTypeInput.addEventListener("change", updateTopInfo);
 eventDateInput.addEventListener("input", updateTopInfo);
 eventLocationInput.addEventListener("input", updateTopInfo);
 
