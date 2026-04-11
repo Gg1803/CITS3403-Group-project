@@ -10,8 +10,6 @@ const joinedCount = document.getElementById("joinedCount");
 const pendingCount = document.getElementById("pendingCount");
 const declinedCount = document.getElementById("declinedCount");
 const resultsCount = document.getElementById("resultsCount");
-const thisWeekCount = document.getElementById("thisWeekCount");
-const needResponseCount = document.getElementById("needResponseCount");
 
 const toast = document.getElementById("toast");
 const detailModal = document.getElementById("detailModal");
@@ -119,10 +117,6 @@ function updateSummary(filteredItems = invitations) {
   pendingCount.textContent = invitations.filter(item => item.status === "pending").length;
   declinedCount.textContent = invitations.filter(item => item.status === "declined").length;
   resultsCount.textContent = filteredItems.length;
-
-  const weekThreshold = new Date("2026-04-07");
-  thisWeekCount.textContent = invitations.filter(item => new Date(item.date) <= weekThreshold).length;
-  needResponseCount.textContent = invitations.filter(item => item.status === "pending").length;
 }
 
 function getStatusClass(status) {
@@ -213,29 +207,28 @@ function renderInvitations() {
 
       <div class="card-content">
         <div class="card-top">
-          <span class="event-type">🏷 ${item.type}</span>
+          <span class="event-type">${item.type}</span>
           <span class="status-badge ${getStatusClass(item.status)}">
             ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}
           </span>
         </div>
 
         <h2 class="event-name">${item.name}</h2>
-
         <p class="event-description">${item.description}</p>
 
         <div class="meta-list">
           <div class="meta-row">
-            <span class="meta-label">📅 Date</span>
+            <span class="meta-label">Date</span>
             <span class="meta-value">${formatDate(item.date)}</span>
           </div>
 
           <div class="meta-row">
-            <span class="meta-label">📍 Location</span>
+            <span class="meta-label">Location</span>
             <span class="meta-value">${item.location}</span>
           </div>
 
           <div class="meta-row">
-            <span class="meta-label">📝 Type</span>
+            <span class="meta-label">Type</span>
             <span class="meta-value">${item.type}</span>
           </div>
         </div>
@@ -295,7 +288,7 @@ tabButtons.forEach(button => {
   button.addEventListener("click", () => {
     tabButtons.forEach(btn => btn.classList.remove("active"));
     button.classList.add("active");
-    activeTab = button.dataset.tab;
+    activeTab = button.dataset.tab.toLowerCase();
     renderInvitations();
   });
 });
