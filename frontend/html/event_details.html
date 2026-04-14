@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Details</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="../css/event_details.css">
+</head>
+<body class="theme-beach">
+  <div class="page-container">
+    <div class="main-shell">
+      <header class="page-header">
+        <div>
+          <p class="small-label">CREATED BY ME</p>
+          <h1 class="page-title" id="displayEventTitle">Beach Day Bonanza</h1>
+        </div>
+
+        <div class="header-actions">
+          <button class="nav-btn nav-btn-left" type="button" aria-label="Previous">←</button>
+          <button class="nav-btn nav-btn-right" type="button" aria-label="Next">→</button>
+        </div>
+      </header>
+
+      <section class="event-meta card">
+        <div class="meta-inline">
+          <span id="displayEventDate">25 Mar 2026</span>
+          <span id="displayEventLocation">Santa Monica Beach</span>
+          <span id="displayParticipantCount">0</span>
+        </div>
+      </section>
+
+      <section class="top-edit-area card">
+        <div class="edit-grid">
+          <div class="field-group">
+            <label for="eventTitle">Event Title</label>
+            <input id="eventTitle" type="text" value="Beach Day Bonanza" />
+          </div>
+
+          <div class="field-group">
+            <label for="eventType">Event Type</label>
+            <select id="eventType">
+              <option value="beach" selected>Beach</option>
+              <option value="birthday">Birthday</option>
+              <option value="formal">Formal</option>
+              <option value="festival">Festival</option>
+              <option value="sports">Sports</option>
+              <option value="study">Study</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="eventDate">Date</label>
+            <input id="eventDate" type="date" value="2026-03-25" />
+          </div>
+
+          <div class="field-group">
+            <label for="eventLocation">Location</label>
+            <input id="eventLocation" type="text" value="Santa Monica Beach" />
+          </div>
+        </div>
+      </section>
+
+      <div class="dashboard-grid">
+        <section class="card panel panel-task">
+          <div class="panel-header">
+            <div>
+              <h2>Task Board</h2>
+              <p>Organize everything for your event</p>
+            </div>
+            <button class="action-btn btn-task" id="openTaskModal" type="button">+ Add Task</button>
+          </div>
+
+          <div class="mini-progress-row">
+            <span id="taskProgressCount">0/0</span>
+          </div>
+
+          <div class="progress-track">
+            <div class="progress-fill" id="taskProgressFill"></div>
+          </div>
+
+          <div id="taskList" class="list-area">
+            <p class="empty-state">No tasks added yet.</p>
+          </div>
+        </section>
+
+        <section class="card panel panel-timeline">
+          <div class="panel-header">
+            <div>
+              <h2>Timeline</h2>
+              <p>Plan the flow of your event</p>
+            </div>
+            <button class="action-btn btn-timeline" id="openTimelineModal" type="button">+ Add</button>
+          </div>
+
+          <div id="timelineList" class="list-area">
+            <p class="empty-state">No timeline steps yet.</p>
+          </div>
+        </section>
+
+        <section class="card panel panel-participants">
+          <div class="panel-header">
+            <div>
+              <h2>Participants</h2>
+              <p>Invite and manage attendees</p>
+            </div>
+            <button class="action-btn btn-participants" id="openParticipantModal" type="button">Invite</button>
+          </div>
+
+          <div id="participantList" class="list-area">
+            <p class="empty-state">No participants invited yet.</p>
+          </div>
+        </section>
+
+        <section class="card panel poll-card panel-poll">
+          <div class="panel-header">
+            <div>
+              <h2>Poll</h2>
+              <p>Collect preferences</p>
+            </div>
+            <button class="action-btn btn-poll" id="openPollModal" type="button">Create</button>
+          </div>
+
+          <div class="poll-nav">
+            <button id="prevPollBtn" type="button" aria-label="Previous poll">←</button>
+            <button id="nextPollBtn" type="button" aria-label="Next poll">→</button>
+          </div>
+
+          <div id="pollContainer" class="poll-content">
+            <p class="empty-state">No polls created yet.</p>
+          </div>
+
+          <div class="poll-footer" id="pollFooter">0/0</div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Modal -->
+  <div class="modal-overlay hidden" id="taskModal">
+    <div class="modal card">
+      <div class="modal-header">
+        <h3>Add Task</h3>
+        <button class="close-btn" data-close="taskModal" type="button">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="field-group">
+          <label for="taskName">Task name</label>
+          <input id="taskName" type="text" />
+        </div>
+
+        <div class="field-group">
+          <label for="taskAssignedTo">Assigned to</label>
+          <input id="taskAssignedTo" type="text" />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="action-btn btn-task" id="addTaskBtn" type="button">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline Modal -->
+  <div class="modal-overlay hidden" id="timelineModal">
+    <div class="modal card">
+      <div class="modal-header">
+        <h3>Add Timeline Step</h3>
+        <button class="close-btn" data-close="timelineModal" type="button">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="field-group">
+          <label for="timelineStep">Step</label>
+          <input id="timelineStep" type="text" />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="action-btn btn-timeline" id="addTimelineBtn" type="button">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Participant Modal -->
+  <div class="modal-overlay hidden" id="participantModal">
+    <div class="modal card">
+      <div class="modal-header">
+        <h3>Invite Participant</h3>
+        <button class="close-btn" data-close="participantModal" type="button">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="field-group">
+          <label for="participantName">Search name</label>
+          <input id="participantName" type="text" />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="action-btn btn-participants" id="addParticipantBtn" type="button">Invite</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Poll Modal -->
+  <div class="modal-overlay hidden" id="pollModal">
+    <div class="modal card">
+      <div class="modal-header">
+        <h3>Create Poll</h3>
+        <button class="close-btn" data-close="pollModal" type="button">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="field-group">
+          <label for="pollQuestion">Question</label>
+          <input id="pollQuestion" type="text" />
+        </div>
+
+        <div id="pollOptionsWrapper">
+          <div class="field-group poll-option-field">
+            <label>Option 1</label>
+            <input type="text" class="poll-option-input" />
+          </div>
+
+          <div class="field-group poll-option-field">
+            <label>Option 2</label>
+            <input type="text" class="poll-option-input" />
+          </div>
+        </div>
+
+        <button class="secondary-btn" id="addPollOptionField" type="button">+ Add Option</button>
+      </div>
+
+      <div class="modal-footer">
+        <button class="action-btn btn-poll" id="createPollBtn" type="button">Create Poll</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/event_details.js"></script>
+</body>
+</html>
