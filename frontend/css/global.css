@@ -1,0 +1,110 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+ 
+body {
+  font-family: "Poppins", sans-serif;
+ 
+  /* Neutral soft gradient (light grey → cool blue-grey) */
+  background: linear-gradient(135deg, #f5f7fa, #e4e8ee);
+ 
+  min-height: 100vh;
+  color: #1f2933; /* dark neutral text */
+}
+ 
+.card {
+  /* Slightly more solid for professional feel */
+  background: rgba(255, 255, 255, 0.9);
+ 
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+ 
+  border-radius: 16px;
+ 
+  /* Subtle neutral border */
+  border: 1px solid rgba(0, 0, 0, 0.05);
+ 
+  /* Softer shadow */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+ 
+  transition: all 0.3s ease;
+}
+ 
+.card:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px); /* subtle lift */
+}
+
+/* Shared topbar */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+ 
+.logo-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  cursor: pointer;
+}
+ 
+.logo-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1f2933, #4f8cff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+ 
+.logo-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: white;
+}
+ 
+.logo-text {
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: #1f2933;
+}
+ 
+.logo-text span {
+  color: #4f8cff;
+}
+ 
+.nav-icons {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+ 
+.nav-icons i,
+.nav-icons svg {
+  cursor: pointer;
+  color: #6b7280;
+  transition: color 0.2s, transform 0.2s;
+  width: 20px;
+  height: 20px;
+}
+ 
+.nav-icons i:hover,
+.nav-icons svg:hover {
+  color: #1f2933;
+  transform: translateY(-1px);
+}
+ 
+/* active nav state — add class="nav-active" to the icon wrapper */
+.nav-icons .nav-active svg,
+.nav-icons .nav-active i {
+  color: #4f8cff;
+}
