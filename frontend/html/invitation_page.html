@@ -7,147 +7,131 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link rel="stylesheet" href="../css/global.css">
   <link rel="stylesheet" href="../css/invitation_page.css">
 </head>
 <body>
-  <div class="page-container">
-    <div class="main-shell">
-      <header class="page-header card">
-        <div class="header-left">
-          <p class="small-label">MY EVENTS</p>
-          <h1 class="page-title">Invitations</h1>
-          <p class="page-subtitle">
-            View events you have been invited to, check details, and respond quickly.
-          </p>
-        </div>
+<div class="page-wrapper">
 
-        <div class="header-actions">
-          <button class="nav-btn" type="button" aria-label="Previous">←</button>
-          <button class="nav-btn" type="button" aria-label="Next">→</button>
-        </div>
-      </header>
-
-      <section class="summary-grid">
-        <div class="card summary-card summary-total">
-          <span class="summary-label">Total Invitations</span>
-          <span class="summary-value" id="totalInvitations">0</span>
-        </div>
-
-        <div class="card summary-card summary-joined">
-          <span class="summary-label">Joined</span>
-          <span class="summary-value" id="joinedCount">0</span>
-        </div>
-
-        <div class="card summary-card summary-pending">
-          <span class="summary-label">Pending</span>
-          <span class="summary-value" id="pendingCount">0</span>
-        </div>
-
-        <div class="card summary-card summary-declined">
-          <span class="summary-label">Declined</span>
-          <span class="summary-value" id="declinedCount">0</span>
-        </div>
-      </section>
-
-      <section class="card filter-section">
-        <div class="section-head">
-          <div>
-            <h2 class="section-title">Search & Filter</h2>
-            <p class="section-subtitle">
-              Find invitations faster by event name, location, type, status, or date.
-            </p>
-          </div>
-        </div>
-
-        <div class="filter-grid">
-          <div class="field-group">
-            <label for="searchInput">Search event</label>
-            <input id="searchInput" type="text" placeholder="Search event" />
-          </div>
-
-          <div class="field-group">
-            <label for="typeFilter">Type</label>
-            <select id="typeFilter" class="custom-select">
-              <option value="all">All Types</option>
-              <option value="Social">Social</option>
-              <option value="Workshop">Workshop</option>
-              <option value="Sports">Sports</option>
-              <option value="Study">Study</option>
-            </select>
-          </div>
-
-          <div class="field-group">
-            <label for="statusFilter">Status</label>
-            <select id="statusFilter" class="custom-select">
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="joined">Joined</option>
-              <option value="declined">Declined</option>
-            </select>
-          </div>
-
-          <div class="field-group">
-            <label for="dateFilter">Date From</label>
-            <input id="dateFilter" type="date" />
-          </div>
-
-          <div class="field-group">
-            <label for="sortFilter">Sort By</label>
-            <select id="sortFilter" class="custom-select">
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="name-asc">Name A-Z</option>
-              <option value="name-desc">Name Z-A</option>
-            </select>
-          </div>
-        </div>
-      </section>
-
-      <section class="tab-row">
-        <button class="tab-btn active" data-tab="all" type="button">All</button>
-        <button class="tab-btn" data-tab="pending" type="button">Pending</button>
-        <button class="tab-btn" data-tab="joined" type="button">Joined</button>
-        <button class="tab-btn" data-tab="declined" type="button">Declined</button>
-      </section>
-
-      <section class="list-head">
-        <div>
-          <h2 class="main-section-title">Your Invitations</h2>
-          <p class="main-section-subtitle">All events currently shared with you.</p>
-        </div>
-
-        <div class="results-pill">
-          <span id="resultsCount">0</span> results
-        </div>
-      </section>
-
-      <section class="invitation-grid" id="invitationGrid"></section>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo-group" onclick="goTo('dashboard.html')">
+      <div class="logo-icon"><i data-lucide="calendar"></i></div>
+      <div class="logo-text">Event<span>ure</span></div>
+    </div>
+    <div class="nav-icons">
+      <i data-lucide="home"    onclick="goTo('dashboard.html')"></i>
+      <i data-lucide="compass" onclick="goTo('discover.html')"></i>
+      <i data-lucide="mail"    onclick="goTo('invitation_page.html')"></i>
+      <i data-lucide="user"    onclick="goTo('profile.html')"></i>
+      <i data-lucide="log-out" onclick="goTo('login_signup.html')"></i>
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <!-- PAGE HEADING -->
+  <div class="page-heading">
+    <h1>My Invitations</h1>
+    <p id="invitationSubtitle">You have 0 pending invitations</p>
+  </div>
 
-  <div class="modal-overlay hidden" id="detailModal">
-    <div class="modal card">
-      <div class="modal-header">
-        <h3 id="modalTitle">Event Detail</h3>
-        <button class="close-btn" id="closeModalBtn" type="button">×</button>
+  <!-- SUMMARY BLOCKS -->
+  <div class="summary-grid">
+    <div class="summary-card summary-total">
+      <span class="summary-label">TOTAL</span>
+      <span class="summary-value" id="totalInvitations">0</span>
+    </div>
+    <div class="summary-card summary-joined">
+      <span class="summary-label">JOINED</span>
+      <span class="summary-value" id="joinedCount">0</span>
+    </div>
+    <div class="summary-card summary-pending">
+      <span class="summary-label">PENDING</span>
+      <span class="summary-value" id="pendingCount">0</span>
+    </div>
+    <div class="summary-card summary-declined">
+      <span class="summary-label">DECLINED</span>
+      <span class="summary-value" id="declinedCount">0</span>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="filter-bar-title">SEARCH & FILTER</div>
+    <div class="filter-row">
+      <div class="field-group search-group">
+        <label for="searchInput">Search event</label>
+        <input id="searchInput" type="text" placeholder="Search by name, location…" />
       </div>
-
-      <div class="modal-body" id="modalBody"></div>
-
-      <div class="modal-footer">
-        <a id="realDetailLink" class="secondary-btn modal-link-btn" href="event_details.html">Open Event Details</a>
-        <button class="action-btn" id="modalJoinBtn" type="button">Join</button>
+      <div class="field-group">
+        <label for="typeFilter">Type</label>
+        <select id="typeFilter">
+          <option value="all">All Types</option>
+          <option value="Beach day">Beach day</option>
+          <option value="House party">House party</option>
+          <option value="Game night">Game night</option>
+          <option value="Hiking/Outdoor">Hiking/Outdoor</option>
+          <option value="Study session">Study session</option>
+          <option value="Sport events">Sport events</option>
+          <option value="Food/dining">Food/dining</option>
+          <option value="Movie night">Movie night</option>
+          <option value="Concert/music">Concert/music</option>
+          <option value="Custom">Custom</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="dateFilter">Date from</label>
+        <input id="dateFilter" type="date" />
+      </div>
+      <div class="field-group">
+        <label for="sortFilter">Sort by</label>
+        <select id="sortFilter">
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="name-asc">Name A–Z</option>
+          <option value="name-desc">Name Z–A</option>
+        </select>
       </div>
     </div>
   </div>
 
-  <script src="../js/event_details.js"></script>
+  <!-- TABS + RESULTS -->
+  <div class="filter-footer">
+    <div class="tab-row">
+      <button class="tab-btn active" data-tab="all"      type="button">All</button>
+      <button class="tab-btn"        data-tab="pending"  type="button">Pending</button>
+      <button class="tab-btn"        data-tab="joined"   type="button">Joined</button>
+      <button class="tab-btn"        data-tab="declined" type="button">Declined</button>
+    </div>
+    <div class="results-pill"><span id="resultsCount">0</span> results</div>
+  </div>
+
+  <!-- INVITATION GRID -->
+  <div class="invitation-grid" id="invitationGrid"></div>
+
+</div><!-- /page-wrapper -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- QUICK VIEW MODAL -->
+<div class="modal-overlay hidden" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Event Detail</h3>
+      <button class="close-btn" id="closeModalBtn" type="button">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <a id="modalDetailLink" class="modal-secondary" href="event_details.html">View Details</a>
+      <button class="modal-accept" id="modalJoinBtn" type="button">Accept</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/invitation_page.js"></script>
 </body>
 </html>
