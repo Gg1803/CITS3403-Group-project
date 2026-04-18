@@ -128,25 +128,6 @@ body {
 
 .view-btn:hover { background: #f1f5f9; }
 
-.edit-btn {
-  flex: 1;
-  padding: 9px;
-  border-radius: 999px;
-  border: none;
-  background: linear-gradient(135deg, #4f8cff, #6b9dfc);
-  color: white;
-  cursor: pointer;
-  font-weight: 600;
-  font-family: "Poppins", sans-serif;
-  transition: 0.2s;
-  font-size: 0.85rem;
-}
-
-.edit-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(79, 140, 255, 0.25);
-}
-
 /* MODAL */
 .modal {
   position: fixed;

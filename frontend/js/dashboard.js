@@ -156,7 +156,6 @@ function renderEvents() {
         </div>
         <div class="card-footer">
           <button class="view-btn" onclick="goToDetail()">View Details</button>
-          <button class="edit-btn" onclick="openEditModal(${index})">Edit</button>
         </div>
       </div>
     `;
