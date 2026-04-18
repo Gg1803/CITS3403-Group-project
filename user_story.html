@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eventure | Plan, Share, and Manage Events Together</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/user_story.css" />
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="../js/user_story.js" defer></script>
+</head>
+<body>
+  <div class="landing-shell">
+    <header class="site-header">
+      <div class="topbar header-bar">
+        <a class="logo-group" href="user_story.html" aria-label="Eventure home">
+          <div class="logo-icon"><i data-lucide="calendar"></i></div>
+          <div class="logo-text">Event<span>ure</span></div>
+        </a>
+
+        <nav class="header-nav" aria-label="Page sections">
+          <a href="#features">Features</a>
+          <a href="#workflow">How It Works</a>
+          <a href="#start">Start</a>
+        </nav>
+
+        <div class="header-actions">
+          <button class="header-btn header-btn-primary" data-auth="log in&signup" type="button">Log In & Sign Up</button>
+        </div>
+
+        <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu" aria-expanded="false">
+          <i data-lucide="menu"></i>
+        </button>
+      </div>
+
+      <div class="mobile-menu" id="mobileMenu" hidden>
+        <a href="#features">Features</a>
+        <a href="#workflow">How It Works</a>
+        <a href="#start">Start</a>
+        <button class="header-btn header-btn-primary mobile-auth" data-auth="signup" type="button">Log In & Sign Up</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero-section">
+        <div class="hero-copy" data-reveal>
+          <h1>Make it easy to create, edit, share, and manage events together.</h1>
+
+          <div class="hero-actions-row">
+            <button class="cta-btn cta-primary" data-auth="signup" type="button">
+              Start Now
+              <i data-lucide="arrow-right"></i>
+            </button>
+            <button class="cta-btn cta-secondary" data-auth="login" type="button">Log In</button>
+            <button class="cta-btn cta-ghost" data-scroll-target="features" type="button">Explore Features</button>
+          </div>
+
+          <div class="hero-pills">
+            <span><i data-lucide="calendar-plus"></i>Create events quickly</span>
+            <span><i data-lucide="pencil"></i>Edit details anytime</span>
+            <span><i data-lucide="users"></i>Invite and manage attendees</span>
+            <span><i data-lucide="bar-chart-3"></i>Run simple polls</span>
+          </div>
+        </div>
+
+        <div class="hero-visual" data-reveal>
+          <div class="visual-glow visual-glow-left"></div>
+          <div class="visual-glow visual-glow-right"></div>
+
+          <div class="preview-window card">
+            <div class="preview-window-top">
+              <div class="window-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="preview-label">Eventure Workspace</div>
+            </div>
+
+            <div class="preview-main-card">
+              <div class="preview-hero gradient-panel">
+                <span class="summary-badge">Private Event</span>
+                <h2>Design Sprint Meetup</h2>
+                <p>Thursday, 6:30 PM - City Library Studio</p>
+
+                <div class="avatar-strip">
+                  <span>AM</span>
+                  <span>JL</span>
+                  <span>RK</span>
+                  <strong>+8</strong>
+                </div>
+              </div>
+
+              <div class="preview-grid">
+                <article class="mini-card">
+                  <div class="mini-card-head">
+                    <i data-lucide="list-todo"></i>
+                    <span>Task Board</span>
+                  </div>
+                  <div class="task-item">
+                    <span>Venue confirmed</span>
+                    <strong>Done</strong>
+                  </div>
+                  <div class="task-item">
+                    <span>Share event link</span>
+                    <strong>Pending</strong>
+                  </div>
+                  <div class="progress-track-demo">
+                    <div class="progress-fill-demo"></div>
+                  </div>
+                </article>
+
+                <article class="mini-card mini-card-alt">
+                  <div class="mini-card-head">
+                    <i data-lucide="route"></i>
+                    <span>Timeline</span>
+                  </div>
+                  <div class="timeline-step">6:30 PM - Welcome</div>
+                  <div class="timeline-step">7:00 PM - Workshop</div>
+                  <div class="timeline-step">8:10 PM - Feedback Poll</div>
+                </article>
+              </div>
+            </div>
+
+            <aside class="floating-card floating-discover">
+              <div class="floating-title">
+                <i data-lucide="compass"></i>
+                <span>Public Discover</span>
+              </div>
+              <p>Find public events around you and join in a few taps.</p>
+            </aside>
+
+            <aside class="floating-card floating-invite">
+              <div class="floating-title">
+                <i data-lucide="mail"></i>
+                <span>Invites</span>
+              </div>
+              <div class="invite-row">
+                <span>Joined</span>
+                <strong>12</strong>
+              </div>
+              <div class="invite-row">
+                <span>Pending</span>
+                <strong>4</strong>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="value-strip" data-reveal>
+        <article class="value-item card">
+          <i data-lucide="sparkles"></i>
+          <div>
+            <h3>Simple from the first click</h3>
+            <p>Clear layout, fast actions, and a welcoming flow before users even log in.</p>
+          </div>
+        </article>
+
+        <article class="value-item card">
+          <i data-lucide="shield"></i>
+          <div>
+            <h3>Flexible privacy</h3>
+            <p>Keep plans private for your group or publish events for wider discovery.</p>
+          </div>
+        </article>
+
+        <article class="value-item card">
+          <i data-lucide="link"></i>
+          <div>
+            <h3>Everything stays connected</h3>
+            <p>Details, invites, tasks, and updates live in one consistent experience.</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="section-block" id="features">
+        <div class="section-heading" data-reveal>
+          <h2>Built for the way real event planning actually happens.</h2>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card card" data-reveal>
+            <div class="feature-icon feature-blue"><i data-lucide="calendar-plus"></i></div>
+            <h3>Create events with clarity</h3>
+            <p>Start with a title, type, date, location, description, and a clean event structure right away.</p>
+          </article>
+
+          <article class="feature-card card" data-reveal>
+            <div class="feature-icon feature-indigo"><i data-lucide="pencil"></i></div>
+            <h3>Edit details anytime</h3>
+            <p>Update information as plans change, without losing the structure of the event page.</p>
+          </article>
+
+          <article class="feature-card card" data-reveal>
+            <div class="feature-icon feature-teal"><i data-lucide="users"></i></div>
+            <h3>Invite and manage participants</h3>
+            <p>Keep track of who is joining, who is pending, and who needs a follow-up.</p>
+          </article>
+
+          <article class="feature-card card" data-reveal>
+            <div class="feature-icon feature-orange"><i data-lucide="list-todo"></i></div>
+            <h3>Organize tasks and timeline</h3>
+            <p>Break planning into manageable steps so every event stays easy to coordinate.</p>
+          </article>
+
+          <article class="feature-card card" data-reveal>
+            <div class="feature-icon feature-purple"><i data-lucide="bar-chart-3"></i></div>
+            <h3>Collect feedback with polls</h3>
+
+          <article class="feature-card card" data-reveal>
+            <div class="feature-icon feature-slate"><i data-lucide="compass"></i></div>
+            <h3>Discover public events</h3>
+            
+          </article>
+        </div>
+      </section>
+
+      <section class="spotlight-section">
+        <div class="spotlight-grid">
+          <div class="spotlight-copy" data-reveal>
+            <h2>Update event details without making the experience feel messy.</h2>
+            
+
+            <div class="spotlight-list">
+              <div><i data-lucide="check"></i>Title, type, date, and location stay easy to edit</div>
+              <div><i data-lucide="check"></i>Descriptions remain short, useful, and event-focused</div>
+              <div><i data-lucide="check"></i>Public or private visibility fits different use cases</div>
+            </div>
+          </div>
+
+          <div class="spotlight-visual card" data-reveal>
+            <div class="editor-shell">
+              <div class="editor-row editor-row-large">
+                <span class="editor-label">Event Title</span>
+                <strong>Beach Day Bonanza</strong>
+              </div>
+              <div class="editor-grid">
+                <div class="editor-box">
+                  <span class="editor-label">Type</span>
+                  <strong>Beach Day</strong>
+                </div>
+                <div class="editor-box">
+                  <span class="editor-label">Date</span>
+                  <strong>25 Mar 2026</strong>
+                </div>
+                <div class="editor-box">
+                  <span class="editor-label">Location</span>
+                  <strong>Cottesloe Beach</strong>
+                </div>
+                <div class="editor-box editor-highlight">
+                  <span class="editor-label">Visibility</span>
+                  <strong>Public Event</strong>
+                </div>
+              </div>
+              <div class="editor-note">
+                Keep the latest plan in one place so every attendee sees the same version.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="spotlight-grid spotlight-grid-reverse">
+          <div class="spotlight-visual card" data-reveal>
+            <div class="invite-shell">
+              <div class="invite-summary">
+                <div>
+                  <span class="editor-label">Invitation Status</span>
+                  <strong>All responses in one place</strong>
+                </div>
+                <span class="status-pill">Live</span>
+              </div>
+
+              <div class="invite-status-list">
+                <div class="status-row">
+                  <span>Joined</span>
+                  <strong class="status-green">08</strong>
+                </div>
+                <div class="status-row">
+                  <span>Pending</span>
+                  <strong class="status-blue">04</strong>
+                </div>
+                <div class="status-row">
+                  <span>Declined</span>
+                  <strong class="status-slate">02</strong>
+                </div>
+              </div>
+
+              <div class="poll-preview">
+                <div class="poll-head">
+                  <i data-lucide="bar-chart-3"></i>
+                  <span>Quick Poll</span>
+                </div>
+                <div class="poll-bar-row">
+                  <span>Friday evening</span>
+                  <div class="poll-bar"><div class="poll-fill poll-fill-one"></div></div>
+                </div>
+                <div class="poll-bar-row">
+                  <span>Saturday morning</span>
+                  <div class="poll-bar"><div class="poll-fill poll-fill-two"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="spotlight-copy" data-reveal>
+            <h2>Invite friends, track replies, and keep decisions lightweight.</h2>
+
+            <div class="spotlight-list">
+              <div><i data-lucide="check"></i>Invitation responses are easy to scan</div>
+              <div><i data-lucide="check"></i>Polls reduce back-and-forth in group chats</div>
+              <div><i data-lucide="check"></i>Participants and planning tasks stay connected</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block" id="workflow">
+        <div class="section-heading" data-reveal>
+          <h2>A simple flow that helps users move forward fast.</h2>
+        </div>
+
+        <div class="workflow-grid">
+          <article class="workflow-card card" data-reveal>
+            <span class="step-number">01</span>
+            <h3>Create the event</h3>
+            <p>Set up the basics with a clear form and choose whether the event is public or private.</p>
+          </article>
+
+          <article class="workflow-card card" data-reveal>
+            <span class="step-number">02</span>
+            <h3>Share it with people</h3>
+            <p>Invite friends or let others discover public events through a lightweight browsing experience.</p>
+          </article>
+
+          <article class="workflow-card card" data-reveal>
+            <span class="step-number">03</span>
+            <h3>Manage everything in one place</h3>
+            <p>Track tasks, participants, timeline steps, and poll results without leaving the event workspace.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="final-cta card" id="start" data-reveal>
+        <div class="final-copy">
+          <span class="eyebrow eyebrow-dark">Ready to start planning with less friction?</span>
+          <h2>Bring your next event into one organized home.</h2>
+        </div>
+
+        <div class="final-actions">
+          <button class="cta-btn cta-primary cta-large" data-auth="signup" type="button">
+            Get Started
+            <i data-lucide="arrow-right"></i>
+          </button>
+          <button class="cta-btn cta-secondary cta-large" data-auth="login" type="button">Go to Login</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <p>Eventure keeps event planning clear, collaborative, and easy to return to.</p>
+    </footer>
+  </div>
+</body>
+</html>
