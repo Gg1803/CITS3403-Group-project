@@ -1,45 +1,32 @@
-.page-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 40px 20px 80px 20px;
+body {
+  padding: 28px;
+  color: #2c2c2c;
 }
 
-.page-header {
-  margin-bottom: 30px;
+.container {
+  max-width: 1100px;
+  margin: auto;
 }
 
-.page-header h1 {
-  font-size: 2.6rem;
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-
-.page-header p {
-  color: #6b7280;
-  font-size: 1rem;
-  margin-bottom: 40px;
-}
-
-/* Card Layout */
 .profile-card {
-  padding: 40px;
-  max-width: 750px;
-  margin: 0 auto;
+  padding: 50px;
+  max-width: 700px;
+  margin: 30px auto 0;
 }
 
-/* Top Section */
+/* Top section */
 .profile-top {
   display: flex;
   align-items: center;
-  gap: 28px;
-  margin-bottom: 50px;
+  gap: 20px;
+  margin-bottom: 30px;
 }
 
 .profile-avatar {
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4f46e5, #3b82f6);
+  background: linear-gradient(135deg, #4f8cff, #6b9dfc);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -47,12 +34,12 @@
 }
 
 .profile-avatar svg {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
 }
 
 .profile-top h2 {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   font-weight: 600;
 }
 
@@ -60,63 +47,37 @@
   color: #6b7280;
 }
 
-/* Input Section */
+/* Inputs */
 .profile-fields {
   display: flex;
   flex-direction: column;
-  gap: 30px;
-  margin-bottom: 40px;
+  gap: 20px;
+  margin-bottom: 20px;
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .input-group label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-weight: 600;
-}
-
-.input-group svg {
-  width: 18px;
-  height: 18px;
-  color: #4f8cff;
+  font-size: 0.9rem;
 }
 
 .input-group input {
-  padding: 12px 16px;
+  padding: 10px;
   border-radius: 10px;
   border: 1px solid #d1d5db;
-  font-family: inherit;
-  font-size: 1rem;
-  transition: all 0.2s ease;
+  font-family: "Poppins", sans-serif;
 }
 
 .input-group input:focus {
   outline: none;
   border-color: #4f8cff;
   box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.15);
-}
-
-/* Save Button */
-.save-btn {
-  width: 100%;
-  padding: 16px;
-  border-radius: 30px;
-  border: none;
-  font-size: 1rem;
-  font-weight: 600;
-  color: white;
-  cursor: pointer;
-  background: linear-gradient(90deg, #7c3aed, #3b82f6);
-  transition: all 0.3s ease;
-}
-
-.save-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
 }

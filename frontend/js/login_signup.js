@@ -38,13 +38,33 @@ signupBtn.addEventListener('click', setSignupMode);
 
 // Handle submit
 submitBtn.addEventListener('click', () => {
-  if (isLoginMode) {
-    // LOGIN → go to dashboard
-    window.location.href = "dashboard.html";
-  } else {
-    // SIGN UP → fake success → switch to login
-    alert("Account created! Please log in.");
+  const email = document.querySelector('input[type="email"]').value;
+  const password = document.querySelector('input[type="password"]').value;
+  const nameInput = document.querySelector('#nameField input');
 
+  if (isLoginMode) {
+    // get saved user
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (user && user.email === email) {
+      window.location.href = "dashboard.html";
+    } else {
+      alert("User not found. Please sign up.");
+    }
+
+  } else {
+    // SIGN UP
+    const name = nameInput.value;
+
+    const user = {
+      name: name,
+      email: email,
+      password: password
+    };
+
+    localStorage.setItem("user", JSON.stringify(user));
+
+    alert("Account created! Please log in.");
     setLoginMode();
   }
 });
