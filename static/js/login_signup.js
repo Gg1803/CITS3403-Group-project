@@ -47,7 +47,7 @@ submitBtn.addEventListener('click', () => {
     const user = JSON.parse(localStorage.getItem("user"));
 
     if (user && user.email === email) {
-      window.location.href = "dashboard.html";
+      window.location.href = "/dashboard";
     } else {
       alert("User not found. Please sign up.");
     }

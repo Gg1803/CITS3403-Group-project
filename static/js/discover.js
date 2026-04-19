@@ -176,7 +176,7 @@ function renderEvents(events) {
         ${ev.description ? `<p class="card-desc">${ev.description}</p>` : ""}
       </div>
       <div class="card-footer">
-        <button class="view-btn" onclick="goTo('event_detail.html')">View</button>
+        <button class="view-btn" onclick="goTo('/event-details')">View</button>
         <button class="join-btn ${isJoined ? "joined" : ""}" id="join-${ev.id}" onclick="toggleJoin(${ev.id})">
           ${isJoined ? "Leave" : "Join"}
         </button>

@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Discover Events</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/global.css">
-  <link rel="stylesheet" href="../css/discover.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/discover.css') }}">
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="../js/discover.js" defer></script>
+  <script src="{{ url_for('static', filename='js/discover.js') }}" defer></script>
 </head>
 <body>
 
@@ -16,16 +16,16 @@
 
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo-group" onclick="goTo('dashboard.html')">
+    <div class="logo-group" onclick="goTo('/dashboard')">
       <div class="logo-icon"><i data-lucide="calendar"></i></div>
       <div class="logo-text">Event<span>ure</span></div>
     </div>
     <div class="nav-icons">
-      <span onclick="goTo('dashboard.html')"><i data-lucide="home"></i></span>
-      <span class="nav-active" onclick="goTo('discover.html')"><i data-lucide="compass"></i></span>
-      <span onclick="goTo('invitation_page.html')"><i data-lucide="mail"></i></span>
-      <span onclick="goTo('profile.html')"><i data-lucide="user"></i></span>
-      <span onclick="goTo('login_signup.html')"><i data-lucide="log-out"></i></span>
+      <span onclick="goTo('/dashboard')"><i data-lucide="home"></i></span>
+      <span class="nav-active" onclick="goTo('/discover')"><i data-lucide="compass"></i></span>
+      <span onclick="goTo('/invitations')"><i data-lucide="mail"></i></span>
+      <span onclick="goTo('/profile')"><i data-lucide="user"></i></span>
+      <span onclick="goTo('/login')"><i data-lucide="log-out"></i></span>
     </div>
   </div>
 
