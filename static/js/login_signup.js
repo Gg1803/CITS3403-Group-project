@@ -1,70 +1,58 @@
 let isLoginMode = true;
 
-const loginBtn = document.getElementById('loginBtn');
-const signupBtn = document.getElementById('signupBtn');
-const nameField = document.getElementById('nameField');
-const submitBtn = document.getElementById('submitBtn');
-const extraText = document.getElementById('extraText');
+const loginBtn    = document.getElementById("loginBtn");
+const signupBtn   = document.getElementById("signupBtn");
+const nameField   = document.getElementById("nameField");
+const nameInput   = document.getElementById("nameInput");
+const emailInput  = document.getElementById("emailInput");
+const passInput   = document.getElementById("passwordInput");
+const submitBtn   = document.getElementById("submitBtn");
+const extraText   = document.getElementById("extraText");
 
-// Switch to login mode
+/* Switch to Login */
 function setLoginMode() {
   isLoginMode = true;
-
-  loginBtn.classList.add('active');
-  signupBtn.classList.remove('active');
-
-  nameField.classList.add('hidden');
-
-  submitBtn.innerText = "Let's go!";
+  loginBtn.classList.add("active");
+  signupBtn.classList.remove("active");
+  nameField.classList.add("hidden");
+  submitBtn.innerText = "Log In";
   extraText.innerText = "Forgot password?";
 }
 
-// Switch to signup mode
+/* Switch to Sign Up */
 function setSignupMode() {
   isLoginMode = false;
-
-  signupBtn.classList.add('active');
-  loginBtn.classList.remove('active');
-
-  nameField.classList.remove('hidden');
-
+  signupBtn.classList.add("active");
+  loginBtn.classList.remove("active");
+  nameField.classList.remove("hidden");
   submitBtn.innerText = "Create Account";
   extraText.innerText = "";
 }
 
-// Toggle buttons
-loginBtn.addEventListener('click', setLoginMode);
-signupBtn.addEventListener('click', setSignupMode);
+loginBtn.addEventListener("click", setLoginMode);
+signupBtn.addEventListener("click", setSignupMode);
 
-// Handle submit
-submitBtn.addEventListener('click', () => {
-  const email = document.querySelector('input[type="email"]').value;
-  const password = document.querySelector('input[type="password"]').value;
-  const nameInput = document.querySelector('#nameField input');
+/* Submit */
+submitBtn.addEventListener("click", () => {
+  const email    = emailInput.value.trim();
+  const password = passInput.value;
 
   if (isLoginMode) {
-    // get saved user
     const user = JSON.parse(localStorage.getItem("user"));
-
-    if (user && user.email === email) {
+    if (user && user.email === email && user.password === password) {
       window.location.href = "/dashboard";
     } else {
-      alert("User not found. Please sign up.");
+      alert("Incorrect email or password. Please try again.");
     }
-
   } else {
-    // SIGN UP
-    const name = nameInput.value;
-
-    const user = {
-      name: name,
-      email: email,
-      password: password
-    };
-
+    const name = nameInput.value.trim();
+    if (!name || !email || !password) {
+      alert("Please fill in all fields.");
+      return;
+    }
+    const user = { name, email, password };
     localStorage.setItem("user", JSON.stringify(user));
-
-    alert("Account created! Please log in.");
+    alert("Account created! You can now log in.");
     setLoginMode();
   }
 });
