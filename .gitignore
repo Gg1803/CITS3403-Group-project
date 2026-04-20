@@ -1,0 +1,9 @@
+# Python
+venv/
+__pycache__/
+
+# Database
+instance/database.db
+
+# Mac
+.DS_Store
