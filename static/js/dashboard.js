@@ -29,7 +29,7 @@ let events = [
 
 /* NAV */
 function goTo(page) { window.location.href = page; }
-function goToDetail() { window.location.href = "event_details.html"; }
+function goToDetail() { window.location.href = "/event-details"; }
 
 /* MODAL */
 function openModal() {

@@ -11,8 +11,8 @@
 
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <link rel="stylesheet" href="../css/global.css">
-  <link rel="stylesheet" href="../css/event_details.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/event_details.css') }}">
 </head>
 
 <body class="theme-beach">
@@ -20,16 +20,16 @@
 
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo-group" onclick="goTo('dashboard.html')">
+    <div class="logo-group" onclick="goTo('/dashboard')">
       <div class="logo-icon"><i data-lucide="calendar"></i></div>
       <div class="logo-text">Event<span>ure</span></div>
     </div>
     <div class="nav-icons">
-      <i data-lucide="home"    onclick="goTo('dashboard.html')"></i>
-      <i data-lucide="compass" onclick="goTo('discover.html')"></i>
-      <i data-lucide="mail"    onclick="goTo('invitation_page.html')"></i>
-      <i data-lucide="user"    onclick="goTo('profile.html')"></i>
-      <i data-lucide="log-out" onclick="goTo('login_signup.html')"></i>
+      <i data-lucide="home"    onclick="goTo('/dashboard')"></i>
+      <i data-lucide="compass" onclick="goTo('/discover')"></i>
+      <i data-lucide="mail"    onclick="goTo('/invitations')"></i>
+      <i data-lucide="user"    onclick="goTo('/profile')"></i>
+      <i data-lucide="log-out" onclick="goTo('/login')"></i>
     </div>
   </div>
 
@@ -254,6 +254,6 @@
   </div>
 </div>
 
-<script src="../js/event_details.js"></script>
+<script src="{{ url_for('static', filename='js/event_details.js') }}"></script>
 </body>
 </html>

@@ -167,7 +167,7 @@ function openModalForEvent(item) {
 
   modalJoinBtn.textContent = item.status === "joined" ? "Accepted" : "Accept";
   modalJoinBtn.disabled    = item.status === "joined" || item.status === "declined";
-  modalDetailLink.href     = `event_details.html?id=${item.id}`;
+  modalDetailLink.href = `/event-details?id=${item.id}`;
 
   detailModal.classList.remove("hidden");
 }
@@ -251,7 +251,7 @@ function renderInvitations() {
     quickViewBtn.addEventListener("click", () => openModalForEvent(item));
 
     viewDetailBtn.addEventListener("click", () => {
-      goTo(`event_details.html?id=${item.id}`);
+      goTo(`/event-details?id=${item.id}`);
     });
 
     acceptBtn.addEventListener("click", () => {
