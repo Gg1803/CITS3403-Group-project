@@ -1,58 +1,51 @@
-let isLoginMode = true;
+const loginBtn   = document.getElementById("loginBtn");
+const signupBtn  = document.getElementById("signupBtn");
+const loginForm  = document.getElementById("loginForm");
+const signupForm = document.getElementById("signupForm");
+const extraText  = document.getElementById("extraText");
 
-const loginBtn    = document.getElementById("loginBtn");
-const signupBtn   = document.getElementById("signupBtn");
-const nameField   = document.getElementById("nameField");
-const nameInput   = document.getElementById("nameInput");
-const emailInput  = document.getElementById("emailInput");
-const passInput   = document.getElementById("passwordInput");
-const submitBtn   = document.getElementById("submitBtn");
-const extraText   = document.getElementById("extraText");
-
-/* Switch to Login */
-function setLoginMode() {
-  isLoginMode = true;
+loginBtn.addEventListener("click", () => {
   loginBtn.classList.add("active");
   signupBtn.classList.remove("active");
-  nameField.classList.add("hidden");
-  submitBtn.innerText = "Log In";
+  loginForm.classList.remove("hidden");
+  signupForm.classList.add("hidden");
   extraText.innerText = "Forgot password?";
-}
+});
 
-/* Switch to Sign Up */
-function setSignupMode() {
-  isLoginMode = false;
+signupBtn.addEventListener("click", () => {
   signupBtn.classList.add("active");
   loginBtn.classList.remove("active");
-  nameField.classList.remove("hidden");
-  submitBtn.innerText = "Create Account";
+  signupForm.classList.remove("hidden");
+  loginForm.classList.add("hidden");
   extraText.innerText = "";
-}
+});
 
-loginBtn.addEventListener("click", setLoginMode);
-signupBtn.addEventListener("click", setSignupMode);
+// Auto-switch to login tab if email is pre-filled (coming from signup)
+window.addEventListener("load", () => {
+  const loginEmail = document.getElementById("loginEmail");
+  if (loginEmail && loginEmail.value !== "") {
+    loginBtn.classList.add("active");
+    signupBtn.classList.remove("active");
+    loginForm.classList.remove("hidden");
+    signupForm.classList.add("hidden");
+    extraText.innerText = "Forgot password?";
+  }
+});
 
-/* Submit */
-submitBtn.addEventListener("click", () => {
-  const email    = emailInput.value.trim();
-  const password = passInput.value;
+// If error is shown, stay on login form and focus password
+window.addEventListener("load", () => {
+  const loginEmail = document.getElementById("loginEmail");
+  const errorBox   = document.querySelector(".login-error");
 
-  if (isLoginMode) {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user && user.email === email && user.password === password) {
-      window.location.href = "/dashboard";
-    } else {
-      alert("Incorrect email or password. Please try again.");
-    }
-  } else {
-    const name = nameInput.value.trim();
-    if (!name || !email || !password) {
-      alert("Please fill in all fields.");
-      return;
-    }
-    const user = { name, email, password };
-    localStorage.setItem("user", JSON.stringify(user));
-    alert("Account created! You can now log in.");
-    setLoginMode();
+  if (loginEmail && loginEmail.value !== "") {
+    loginBtn.classList.add("active");
+    signupBtn.classList.remove("active");
+    loginForm.classList.remove("hidden");
+    signupForm.classList.add("hidden");
+    extraText.innerText = "Forgot password?";
+  }
+
+  if (errorBox) {
+    document.getElementById("loginPassword").focus();
   }
 });
