@@ -6,4 +6,4 @@ __pycache__/
 instance/database.db
 
 # Mac
-.DS_Store
+.DS_Storeinstance/database.db
