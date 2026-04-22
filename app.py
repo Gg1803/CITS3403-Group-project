@@ -137,11 +137,20 @@ def update_event(event_id):
     event = Event.query.get_or_404(event_id)
     if event.user_id != current_user.id:
         return jsonify({"error": "Unauthorised"}), 403
+
     data = request.get_json()
+
     event.title      = data.get("title", event.title)
     event.event_type = data.get("event_type", event.event_type)
-    event.event_date = datetime.strptime(data.get("date"), "%Y-%m-%d") if data.get("date") else event.event_date
     event.location   = data.get("location", event.location)
+
+    if data.get("date"):
+        event.event_date = datetime.strptime(data["date"], "%Y-%m-%d")
+
+    # NEW FIELDS
+    event.description = data.get("description", event.description)
+    event.is_public   = data.get("is_public", event.is_public)
+
     db.session.commit()
     return jsonify({"success": True})
 

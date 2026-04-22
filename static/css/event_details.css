@@ -83,8 +83,9 @@
 
 .edit-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr) auto;
   gap: 14px;
+  align-items: end; 
 }
 
 .field-group {
@@ -123,33 +124,28 @@
   background: #fff;
 }
 
-.edit-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
-}
-
 .save-btn {
   border: none;
   border-radius: 999px;
-  padding: 7px 16px;             
+  height: 35px;         
+  padding: 0 20px;       
   font-family: "Poppins", sans-serif;
-  font-size: 0.78rem;         
+  font-size: 0.70rem;
   font-weight: 700;
   cursor: pointer;
-
-  /* Dark style */
-  background: #1f2933;         
+  background: #1f2933;
   color: #fff;
-
   box-shadow: 0 3px 10px rgba(0,0,0,0.18);
   transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  justify-self: end;
+  align-self: end;
+  grid-column: 4;
 }
 
 .save-btn:hover {
   transform: translateY(-1px);
+  background: #111827;
   box-shadow: 0 5px 14px rgba(0,0,0,0.25);
-  background: #111827;        
 }
 
 /* Main grid: left col (3 stacked) + right col (poll) */

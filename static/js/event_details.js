@@ -6,6 +6,8 @@ const eventTitleInput        = document.getElementById("eventTitle");
 const eventTypeInput         = document.getElementById("eventType");
 const eventDateInput         = document.getElementById("eventDate");
 const eventLocationInput     = document.getElementById("eventLocation");
+const eventDescriptionInput = document.getElementById("eventDescription");
+const eventVisibilityInput  = document.getElementById("eventVisibility");
 const displayEventTitle      = document.getElementById("displayEventTitle");
 const displayEventDate       = document.getElementById("displayEventDate");
 const displayEventLocation   = document.getElementById("displayEventLocation");
@@ -391,16 +393,22 @@ eventLocationInput.addEventListener("input", updateTopInfo);
 /* ── Save event details ───────────────────────────────────────── */
 async function saveEvent() {
   const res = await fetch(`/event/${EVENT_ID}`, {
-    method:  "PATCH",
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({
-      title:      eventTitleInput.value.trim(),
+    body: JSON.stringify({
+      title: eventTitleInput.value.trim(),
       event_type: eventTypeInput.value,
-      date:       eventDateInput.value,
-      location:   eventLocationInput.value.trim()
+      date: eventDateInput.value,
+      location: eventLocationInput.value.trim(),
+
+      // NEW
+      description: eventDescriptionInput.value.trim(),
+      is_public: eventVisibilityInput.value === "public"
     })
   });
+
   const data = await res.json();
+
   if (data.success) {
     updateTopInfo();
     alert("Event saved!");

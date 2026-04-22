@@ -88,8 +88,17 @@
         <label for="eventLocation">Location</label>
         <input id="eventLocation" type="text" value="{{ event.location or '' }}" />
       </div>
-    </div>
-    <div class="edit-actions">
+      <div class="field-group">
+        <label for="eventDescription">Description</label>
+        <input id="eventDescription" type="text" value="{{ event.description or '' }}" />
+      </div>
+      <div class="field-group">
+        <label for="eventVisibility">Visibility</label>
+        <select id="eventVisibility">
+          <option value="private" {% if not event.is_public %}selected{% endif %}>Private</option>
+          <option value="public" {% if event.is_public %}selected{% endif %}>Public</option>
+        </select>
+      </div>
       <button class="save-btn" onclick="saveEvent()">Save</button>
     </div>
   </div>
