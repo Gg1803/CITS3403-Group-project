@@ -5,16 +5,16 @@ function goTo(page) {
 
 // gradient map
 const gradientMap = {
-  "Beach day":      "gradient-teal",
-  "House party":    "gradient-pink",
-  "Game night":     "gradient-purple",
+  "Beach day": "gradient-teal",
+  "House party": "gradient-pink",
+  "Game night": "gradient-purple",
   "Hiking/Outdoor": "gradient-green",
-  "Study session":  "gradient-grey",
-  "Sport events":   "gradient-orange",
-  "Food/dining":    "gradient-red",
-  "Movie night":    "gradient-indigo",
-  "Concert/music":  "gradient-concert",
-  "Custom":         "gradient-dark"
+  "Study session": "gradient-grey",
+  "Sport events": "gradient-orange",
+  "Food/dining": "gradient-red",
+  "Movie night": "gradient-indigo",
+  "Concert/music": "gradient-concert",
+  "Custom": "gradient-dark"
 };
 
 // fake public data
@@ -27,6 +27,7 @@ const publicEvents = [
     location: "Cottesloe Beach, Perth",
     description: "Casual volleyball followed by a bonfire. All levels welcome!",
     attendees: 14,
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: 2,
@@ -36,6 +37,7 @@ const publicEvents = [
     location: "Fremantle, Perth",
     description: "Bring a snack, bring a vibe. Good music guaranteed.",
     attendees: 22,
+    image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: 3,
@@ -45,6 +47,7 @@ const publicEvents = [
     location: "The Broken Hill Hotel, Perth",
     description: "Teams of 4 — prizes for top 3 teams. Free entry.",
     attendees: 31,
+    image: "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: 4,
@@ -54,6 +57,7 @@ const publicEvents = [
     location: "Kings Park, Perth",
     description: "A scenic 8 km loop with coffee at the end.",
     attendees: 9,
+    image: "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: 5,
@@ -63,6 +67,7 @@ const publicEvents = [
     location: "State Library of WA",
     description: "Weekly co-working for designers & developers. BYOL.",
     attendees: 7,
+    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: 6,
@@ -72,6 +77,7 @@ const publicEvents = [
     location: "Langley Park, Perth",
     description: "Mixed-gender friendly match. Bring your boots!",
     attendees: 18,
+    image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: 7,
@@ -81,6 +87,7 @@ const publicEvents = [
     location: "Northbridge, Perth",
     description: "Hit 4 dumpling spots in one evening. Limited spots.",
     attendees: 12,
+    image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: 8,
@@ -90,6 +97,7 @@ const publicEvents = [
     location: "Elizabeth Quay, Perth",
     description: "BYO blankets & snacks. Screening: The Grand Budapest Hotel.",
     attendees: 40,
+    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: 9,
@@ -99,6 +107,7 @@ const publicEvents = [
     location: "Rosemount Hotel, Perth",
     description: "Three local acts, $5 entry, all proceeds to charity.",
     attendees: 55,
+    image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: 10,
@@ -108,6 +117,7 @@ const publicEvents = [
     location: "City Beach, Perth",
     description: "Free community yoga session. Mats provided.",
     attendees: 26,
+    image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: 11,
@@ -117,6 +127,7 @@ const publicEvents = [
     location: "Perth City, WA",
     description: "SNES, N64, PS1 — the full nostalgia trip. Snacks supplied.",
     attendees: 16,
+    image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: 12,
@@ -126,7 +137,8 @@ const publicEvents = [
     location: "Subiaco, Perth",
     description: "Live jazz quartet + bottomless mimosas. Bookings required.",
     attendees: 34,
-  },
+    image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1200&q=80"
+  }
 ];
 
 // Tracks which events the user has joined (by id)
@@ -135,7 +147,11 @@ const joined = new Set();
 /* HELPERS */
 function formatDate(dateStr) {
   const d = new Date(dateStr);
-  return d.toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" });
+  return d.toLocaleDateString("en-AU", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
 }
 
 function getGradient(type) {
@@ -164,17 +180,25 @@ function renderEvents(events) {
     const isJoined = joined.has(ev.id);
     const card = document.createElement("div");
     card.className = "card";
+
     card.innerHTML = `
-      <div class="card-header ${getGradient(ev.type)}">
-        <div class="card-title">${ev.title}</div>
-        <div class="card-badge">${ev.type}</div>
+      <div class="card-image-wrap">
+        <img class="card-image" src="${ev.image}" alt="${ev.title}">
+        <div class="card-image-overlay ${getGradient(ev.type)}"></div>
+
+        <div class="card-header-overlay">
+          <div class="card-title">${ev.title}</div>
+          <div class="card-badge">${ev.type}</div>
+        </div>
       </div>
+
       <div class="card-content">
         <p><i data-lucide="calendar"></i> ${formatDate(ev.date)}</p>
         <p><i data-lucide="map-pin"></i> ${ev.location}</p>
         <p><i data-lucide="users"></i> ${ev.attendees} going${isJoined ? '<span class="joined-badge">Joined</span>' : ""}</p>
         ${ev.description ? `<p class="card-desc">${ev.description}</p>` : ""}
       </div>
+
       <div class="card-footer">
         <button class="view-btn" onclick="goTo('/event-details')">View Details</button>
         <button class="join-btn ${isJoined ? "joined" : ""}" id="join-${ev.id}" onclick="toggleJoin(${ev.id})">
@@ -182,6 +206,7 @@ function renderEvents(events) {
         </button>
       </div>
     `;
+
     grid.appendChild(card);
   });
 
@@ -191,9 +216,11 @@ function renderEvents(events) {
 /* FILTER */
 function filterEvents() {
   const val = document.getElementById("typeFilter").value;
-  const filtered = val === "all"
-    ? publicEvents
-    : publicEvents.filter(e => e.type === val);
+  const filtered =
+    val === "all"
+      ? publicEvents
+      : publicEvents.filter(e => e.type === val);
+
   renderEvents(filtered);
 }
 
@@ -210,7 +237,6 @@ function toggleJoin(id) {
     ev.attendees++;
   }
 
-  // Re-render keeping current filter
   filterEvents();
 }
 
