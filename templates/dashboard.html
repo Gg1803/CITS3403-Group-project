@@ -80,50 +80,47 @@
     <div class="modal-content card" onclick="event.stopPropagation()">
       <h2>Create Event</h2>
 
-      <form method="POST" action="/create-event">
-        <label>Event Title</label>
-        <input name="title" id="title" required>
+      <label>Event Title</label>
+      <input id="title">
 
-        <label>Event Type</label>
-        <select name="type" id="type" onchange="handleTypeChange()">
-          <option>Beach day</option>
-          <option>House party</option>
-          <option>Game night</option>
-          <option>Hiking/Outdoor</option>
-          <option>Study session</option>
-          <option>Sport events</option>
-          <option>Food/dining</option>
-          <option>Movie night</option>
-          <option>Concert/music</option>
-          <option>Custom</option>
-        </select>
+      <label>Event Type</label>
+      <select id="type" onchange="handleTypeChange()">
+        <option>Beach day</option>
+        <option>House party</option>
+        <option>Game night</option>
+        <option>Hiking/Outdoor</option>
+        <option>Study session</option>
+        <option>Sport events</option>
+        <option>Food/dining</option>
+        <option>Movie night</option>
+        <option>Concert/music</option>
+        <option>Custom</option>
+      </select>
 
-        <input id="customType" name="customType" placeholder="Enter custom type" style="display:none;">
+      <input id="customType" placeholder="Enter custom type" style="display:none;">
 
-        <label>Date</label>
-        <input type="date" name="date" id="date" required>
+      <label>Date</label>
+      <input type="date" id="date">
 
-        <label>Location</label>
-        <input name="location" id="location" required>
+      <label>Location</label>
+      <input id="location">
 
-        <label>Description</label>
-        <textarea name="description" id="desc" rows="3"
-                  oninput="updateCharCount()"
-                  placeholder="Optional — max 120 characters"></textarea>
-        <div class="char-count-row">
-          <span id="charCount" class="char-count">0/120</span>
-        </div>
+      <label>Description</label>
+      <textarea id="desc" rows="3" oninput="updateCharCount()"
+                placeholder="Optional — max 120 characters"></textarea>
+      <div class="char-count-row">
+        <span id="charCount" class="char-count">0/120</span>
+      </div>
 
-        <label style="display:flex; align-items:center; justify-content:space-between;">
-          Public Event
-          <label class="switch">
-            <input type="checkbox" name="is_public" id="isPublic" value="true">
-            <span class="slider"></span>
-          </label>
+      <label style="display:flex; align-items:center; justify-content:space-between;">
+        Public Event
+        <label class="switch">
+          <input type="checkbox" id="isPublic">
+          <span class="slider"></span>
         </label>
+      </label>
 
-        <button type="submit" class="create-btn">Create</button>
-      </form>
+      <button class="create-btn" onclick="submitEvent()">Create</button>
     </div>
   </div>
 </body>

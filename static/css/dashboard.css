@@ -109,7 +109,7 @@ body {
 
 .card-content i { width: 16px; flex-shrink: 0; }
 
-/* CARD FOOTER — two buttons side by side */
+/* CARD FOOTER */
 .card-footer {
   padding: 0 14px 14px;
   display: flex;
