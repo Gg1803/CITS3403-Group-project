@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Events</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -16,15 +16,15 @@
 
     <!-- TOPBAR -->
     <div class="topbar">
-      <div class="logo-group">
+      <div class="logo-group" onclick="goTo('/dashboard')">
         <div class="logo-icon"><i data-lucide="calendar"></i></div>
         <div class="logo-text">Event<span>ure</span></div>
       </div>
       <div class="nav-icons">
-        <i data-lucide="home"    onclick="goTo('/dashboard')"></i>
+        <i data-lucide="home" onclick="goTo('/dashboard')"></i>
         <i data-lucide="compass" onclick="goTo('/discover')"></i>
-        <i data-lucide="mail"    onclick="goTo('/invitations')"></i>
-        <i data-lucide="user"    onclick="goTo('/profile')"></i>
+        <i data-lucide="mail" onclick="goTo('/invitations')"></i>
+        <i data-lucide="user" onclick="goTo('/profile')"></i>
         <i data-lucide="log-out" onclick="goTo('/login')"></i>
       </div>
     </div>
@@ -41,15 +41,21 @@
     <!-- GRID -->
     <div class="grid" id="eventGrid"></div>
 
+    <!-- EMPTY STATE -->
+    <div class="empty-state hidden" id="emptyState">
+      <i data-lucide="calendar-search"></i>
+      <p>No events created yet.</p>
+    </div>
+
   </div>
 
-  <!-- MODAL (shared for create + edit) -->
+  <!-- MODAL -->
   <div class="modal" id="modal">
-    <div class="modal-content card" onclick="event.stopPropagation()">
+    <div class="modal-content" onclick="event.stopPropagation()">
       <h2>Create Event</h2>
 
       <label>Event Title</label>
-      <input id="title">
+      <input id="title" type="text">
 
       <label>Event Type</label>
       <select id="type" onchange="handleTypeChange()">
@@ -65,19 +71,22 @@
         <option>Custom</option>
       </select>
 
-      <input id="customType" placeholder="Enter custom type" style="display:none;">
+      <input id="customType" type="text" placeholder="Enter custom type" style="display:none;">
 
       <label>Date</label>
       <input type="date" id="date">
 
       <label>Location</label>
-      <input id="location">
+      <input id="location" type="text">
 
       <label>Description</label>
       <textarea id="desc" rows="3" oninput="updateCharCount()" placeholder="Optional — max 120 characters"></textarea>
       <div class="char-count-row">
         <span id="charCount" class="char-count">0/120</span>
       </div>
+
+      <label>Image URL</label>
+      <input id="image" type="text" placeholder="Paste an image URL">
 
       <label style="display:flex; align-items:center; justify-content:space-between;">
         Public Event
