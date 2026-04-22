@@ -20,19 +20,6 @@ signupBtn.addEventListener("click", () => {
   extraText.innerText = "";
 });
 
-// Auto-switch to login tab if email is pre-filled (coming from signup)
-window.addEventListener("load", () => {
-  const loginEmail = document.getElementById("loginEmail");
-  if (loginEmail && loginEmail.value !== "") {
-    loginBtn.classList.add("active");
-    signupBtn.classList.remove("active");
-    loginForm.classList.remove("hidden");
-    signupForm.classList.add("hidden");
-    extraText.innerText = "Forgot password?";
-  }
-});
-
-// If error is shown, stay on login form and focus password
 window.addEventListener("load", () => {
   const loginEmail = document.getElementById("loginEmail");
   const errorBox   = document.querySelector(".login-error");

@@ -14,18 +14,19 @@ def event_details(event_id):
 @events.route("/create-event", methods=["POST"])
 @login_required
 def create_event():
-    title      = request.form["title"]
-    event_type = request.form["type"]
-    date       = request.form["date"]
-    location   = request.form["location"]
-    desc       = request.form.get("description", "")
-    is_public  = request.form.get("is_public") == "true"
-    new_event  = Event(
-        title       = title,
+    event_type = request.form.get("type")
+    if event_type == "Custom":
+        event_type = request.form.get("customType") or "Custom"
+
+    date_str  = request.form.get("date")
+    is_public = request.form.get("is_public") == "true"
+
+    new_event = Event(
+        title       = request.form.get("title"),
         event_type  = event_type,
-        event_date  = datetime.strptime(date, "%Y-%m-%d"),
-        location    = location,
-        description = desc,
+        event_date  = datetime.strptime(date_str, "%Y-%m-%d"),
+        location    = request.form.get("location"),
+        description = request.form.get("description", ""),
         is_public   = is_public,
         user_id     = current_user.id
     )

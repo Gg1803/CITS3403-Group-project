@@ -33,61 +33,97 @@
     <div class="header">
       <div>
         <h1>My Events</h1>
-        <p id="eventCount">You have 0 upcoming events</p>
+        <p>You have {{ events|length }} upcoming event{{ 's' if events|length != 1 else '' }}</p>
       </div>
       <button class="create-btn" onclick="openModal()">+ New Event</button>
     </div>
 
     <!-- GRID -->
-    <div class="grid" id="eventGrid"></div>
+    <div class="grid" id="eventGrid">
+      {% for event in events %}
+      {% set gradient = {
+        'Beach day': 'gradient-teal',
+        'House party': 'gradient-pink',
+        'Game night': 'gradient-purple',
+        'Hiking/Outdoor': 'gradient-green',
+        'Study session': 'gradient-grey',
+        'Sport events': 'gradient-orange',
+        'Food/dining': 'gradient-red',
+        'Movie night': 'gradient-indigo',
+        'Concert/music': 'gradient-concert',
+        'Custom': 'gradient-dark'
+      }.get(event.event_type, 'gradient-dark') %}
+      <div class="card">
+        <div class="card-header {{ gradient }}">
+          <span class="card-title">{{ event.title }}</span>
+          <span class="card-badge">{{ 'Public' if event.is_public else 'Private' }}</span>
+        </div>
+        <div class="card-content">
+          <p><i data-lucide="calendar"></i> {{ event.event_date.strftime('%d %b %Y') if event.event_date else '-' }}</p>
+          <p><i data-lucide="map-pin"></i> {{ event.location or '-' }}</p>
+          <p><i data-lucide="users"></i> {{ event.participants|length }} participants</p>
+          {% if event.description %}
+          <p><i data-lucide="align-left"></i> {{ event.description }}</p>
+          {% endif %}
+        </div>
+        <div class="card-footer">
+          <a class="view-btn" href="/event-details/{{ event.id }}">View Details</a>
+        </div>
+      </div>
+      {% else %}
+      <p style="color:#9ca3af;">No events yet. Create your first one!</p>
+      {% endfor %}
+    </div>
 
-  </div>
-
-  <!-- MODAL (shared for create + edit) -->
+  <!-- MODAL -->
   <div class="modal" id="modal">
     <div class="modal-content card" onclick="event.stopPropagation()">
       <h2>Create Event</h2>
 
-      <label>Event Title</label>
-      <input id="title">
+      <form method="POST" action="/create-event">
+        <label>Event Title</label>
+        <input name="title" id="title" required>
 
-      <label>Event Type</label>
-      <select id="type" onchange="handleTypeChange()">
-        <option>Beach day</option>
-        <option>House party</option>
-        <option>Game night</option>
-        <option>Hiking/Outdoor</option>
-        <option>Study session</option>
-        <option>Sport events</option>
-        <option>Food/dining</option>
-        <option>Movie night</option>
-        <option>Concert/music</option>
-        <option>Custom</option>
-      </select>
+        <label>Event Type</label>
+        <select name="type" id="type" onchange="handleTypeChange()">
+          <option>Beach day</option>
+          <option>House party</option>
+          <option>Game night</option>
+          <option>Hiking/Outdoor</option>
+          <option>Study session</option>
+          <option>Sport events</option>
+          <option>Food/dining</option>
+          <option>Movie night</option>
+          <option>Concert/music</option>
+          <option>Custom</option>
+        </select>
 
-      <input id="customType" placeholder="Enter custom type" style="display:none;">
+        <input id="customType" name="customType" placeholder="Enter custom type" style="display:none;">
 
-      <label>Date</label>
-      <input type="date" id="date">
+        <label>Date</label>
+        <input type="date" name="date" id="date" required>
 
-      <label>Location</label>
-      <input id="location">
+        <label>Location</label>
+        <input name="location" id="location" required>
 
-      <label>Description</label>
-      <textarea id="desc" rows="3" oninput="updateCharCount()" placeholder="Optional — max 120 characters"></textarea>
-      <div class="char-count-row">
-        <span id="charCount" class="char-count">0/120</span>
-      </div>
+        <label>Description</label>
+        <textarea name="description" id="desc" rows="3"
+                  oninput="updateCharCount()"
+                  placeholder="Optional — max 120 characters"></textarea>
+        <div class="char-count-row">
+          <span id="charCount" class="char-count">0/120</span>
+        </div>
 
-      <label style="display:flex; align-items:center; justify-content:space-between;">
-        Public Event
-        <label class="switch">
-          <input type="checkbox" id="isPublic">
-          <span class="slider"></span>
+        <label style="display:flex; align-items:center; justify-content:space-between;">
+          Public Event
+          <label class="switch">
+            <input type="checkbox" name="is_public" id="isPublic" value="true">
+            <span class="slider"></span>
+          </label>
         </label>
-      </label>
 
-      <button class="create-btn" id="modalSubmitBtn" onclick="submitEvent()">Create</button>
+        <button type="submit" class="create-btn">Create</button>
+      </form>
     </div>
   </div>
 </body>
