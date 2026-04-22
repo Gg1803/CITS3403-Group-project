@@ -1,14 +1,14 @@
-const gradients = {
-  "Beach day":      "gradient-teal",
-  "House party":    "gradient-pink",
-  "Game night":     "gradient-purple",
-  "Hiking/Outdoor": "gradient-green",
-  "Study session":  "gradient-grey",
-  "Sport events":   "gradient-orange",
-  "Food/dining":    "gradient-red",
-  "Movie night":    "gradient-indigo",
-  "Concert/music":  "gradient-concert",
-  "Custom":         "gradient-dark"
+const fallbackImages = {
+  "Beach day": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+  "House party": "https://images.unsplash.com/photo-1517457373958-b7bdd4587205",
+  "Game night": "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09",
+  "Hiking/Outdoor": "https://images.unsplash.com/photo-1551632811-561732d1e306",
+  "Study session": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f",
+  "Sport events": "https://images.unsplash.com/photo-1574629810360-7efbbe195018",
+  "Food/dining": "https://images.unsplash.com/photo-1528605248644-14dd04022da1",
+  "Movie night": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba",
+  "Concert/music": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745",
+  "Custom": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d"
 };
 
 function goTo(page) { window.location.href = page; }
@@ -65,9 +65,14 @@ async function submitEvent() {
   const response = await fetch("/create-event", {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({
-      title, type, customType: custom,
-      date, location, description: desc, is_public: isPublic
+    body: JSON.stringify({
+      title,
+      type,
+      customType: custom,
+      date,
+      location,
+      description: desc,
+      is_public: isPublic
     })
   });
 
@@ -83,7 +88,6 @@ async function submitEvent() {
 }
 
 function addEventCard(e) {
-  const gradient = gradients[e.event_type] || "gradient-dark";
   const descHTML = e.description
     ? `<p><i data-lucide="align-left"></i> ${e.description}</p>` : "";
 
@@ -97,16 +101,27 @@ function addEventCard(e) {
   const card = document.createElement("div");
   card.className = "card";
   card.innerHTML = `
-    <div class="card-header ${gradient}">
-      <span class="card-title">${e.title}</span>
-      <span class="card-badge">${e.is_public ? "Public" : "Private"}</span>
+    <div class="card-image-wrap">
+      <img class="card-image"
+          src="${fallbackImages[e.event_type] || fallbackImages["Custom"]}"
+          alt="${e.title}">
     </div>
+
     <div class="card-content">
+      <div class="card-top-row">
+        <h3 class="card-title-text">${e.title}</h3>
+
+        <span class="card-badge ${e.is_public ? "public" : "private"}">
+          ${e.is_public ? "Public" : "Private"}
+        </span>
+      </div>
+
       <p><i data-lucide="calendar"></i> ${e.event_date}</p>
       <p><i data-lucide="map-pin"></i> ${e.location}</p>
       <p><i data-lucide="users"></i> ${e.participants} participants</p>
       ${descHTML}
     </div>
+
     <div class="card-footer">
       <a class="view-btn" href="/event-details/${e.id}">View Details</a>
       <button class="delete-btn" data-event-id="${e.id}">Delete</button>

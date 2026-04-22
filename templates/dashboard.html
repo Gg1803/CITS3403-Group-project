@@ -41,24 +41,33 @@
     <!-- GRID -->
     <div class="grid" id="eventGrid">
       {% for event in events %}
-      {% set gradient = {
-        'Beach day': 'gradient-teal',
-        'House party': 'gradient-pink',
-        'Game night': 'gradient-purple',
-        'Hiking/Outdoor': 'gradient-green',
-        'Study session': 'gradient-grey',
-        'Sport events': 'gradient-orange',
-        'Food/dining': 'gradient-red',
-        'Movie night': 'gradient-indigo',
-        'Concert/music': 'gradient-concert',
-        'Custom': 'gradient-dark'
-      }.get(event.event_type, 'gradient-dark') %}
+      {% set image = {
+        'Beach day': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e',
+        'House party': 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205',
+        'Game night': 'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09',
+        'Hiking/Outdoor': 'https://images.unsplash.com/photo-1551632811-561732d1e306',
+        'Study session': 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f',
+        'Sport events': 'https://images.unsplash.com/photo-1574629810360-7efbbe195018',
+        'Food/dining': 'https://images.unsplash.com/photo-1528605248644-14dd04022da1',
+        'Movie night': 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba',
+        'Concert/music': 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745',
+        'Custom': 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d'
+      }.get(event.event_type, 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d') %}
       <div class="card">
-        <div class="card-header {{ gradient }}">
-          <span class="card-title">{{ event.title }}</span>
-          <span class="card-badge">{{ 'Public' if event.is_public else 'Private' }}</span>
+        <div class="card-image-wrap">
+          <img class="card-image"
+              src="{{ image }}"
+              alt="{{ event.title }}">
         </div>
+
         <div class="card-content">
+          <div class="card-top-row">
+            <h3 class="card-title-text">{{ event.title }}</h3>
+            <span class="card-badge {{ 'public' if event.is_public else 'private' }}">
+              {{ 'Public' if event.is_public else 'Private' }}
+            </span>
+          </div>
+
           <p><i data-lucide="calendar"></i> {{ event.event_date.strftime('%d %b %Y') if event.event_date else '-' }}</p>
           <p><i data-lucide="map-pin"></i> {{ event.location or '-' }}</p>
           <p><i data-lucide="users"></i> {{ event.participants|length }} participants</p>

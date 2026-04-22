@@ -80,19 +80,63 @@ body {
   flex-shrink: 0;
 }
 
-/* GRADIENTS */
-.gradient-green   { background: linear-gradient(135deg, #3aab72, #63c99a); }
-.gradient-orange  { background: linear-gradient(135deg, #e8920a, #f5b445); }
-.gradient-purple  { background: linear-gradient(135deg, #6d74e8, #9da8f0); }
-.gradient-grey    { background: linear-gradient(135deg, #8b95a5, #b8c4d0); }
-.gradient-red     { background: linear-gradient(135deg, #d94040, #f07070); }
-.gradient-teal    { background: linear-gradient(135deg, #0ea89a, #4dd9cc); }
-.gradient-indigo  { background: linear-gradient(135deg, #4f52d6, #8b90e8); }
-.gradient-pink    { background: linear-gradient(135deg, #d6407a, #f090b8); }
-.gradient-concert { background: linear-gradient(135deg, #7a3fa0, #c084e0); }
-.gradient-dark    { background: linear-gradient(135deg, #3d4a5c, #6b7a8d); }
+.card-image-wrap {
+  position: relative;
+  height: 140px;
+  overflow: hidden;
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+.card:hover .card-image {
+  transform: scale(1.05);
+}
+
+.card-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.card-badge.public {
+  background: #d6f3ef;
+  color: #22c3b4;
+}
+
+.card-badge.private {
+  background: #f8ead6;
+  color: #ff9a1f;
+}
 
 /* CARD BODY */
+
+.card-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;   
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.card-title-text {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f2933;
+  margin: 0;
+  flex: 1;              
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;  
+}
+
 .card-content {
   padding: 14px;
   color: #6b7280;
