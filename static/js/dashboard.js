@@ -93,33 +93,62 @@ function addEventCard(e) {
   const empty = grid.querySelector("p");
   if (empty) empty.remove();
 
-  grid.innerHTML += `
-    <div class="card">
-      <div class="card-header ${gradient}">
-        <span class="card-title">${e.title}</span>
-        <span class="card-badge">${e.is_public ? "Public" : "Private"}</span>
-      </div>
-      <div class="card-content">
-        <p><i data-lucide="calendar"></i> ${e.event_date}</p>
-        <p><i data-lucide="map-pin"></i> ${e.location}</p>
-        <p><i data-lucide="users"></i> ${e.participants} participants</p>
-        ${descHTML}
-      </div>
-      <div class="card-footer">
-        <a class="view-btn" href="/event-details/${e.id}">View Details</a>
-      </div>
+  // Create card as element so we can attach listener properly
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <div class="card-header ${gradient}">
+      <span class="card-title">${e.title}</span>
+      <span class="card-badge">${e.is_public ? "Public" : "Private"}</span>
+    </div>
+    <div class="card-content">
+      <p><i data-lucide="calendar"></i> ${e.event_date}</p>
+      <p><i data-lucide="map-pin"></i> ${e.location}</p>
+      <p><i data-lucide="users"></i> ${e.participants} participants</p>
+      ${descHTML}
+    </div>
+    <div class="card-footer">
+      <a class="view-btn" href="/event-details/${e.id}">View Details</a>
+      <button class="delete-btn" data-event-id="${e.id}">Delete</button>
     </div>
   `;
+  grid.appendChild(card);
 
-  // Update event count in header
-  const countEl  = document.querySelector(".header p");
-  const total    = grid.querySelectorAll(".card").length;
+  // Update event count
+  const countEl = document.querySelector(".header p");
+  const total   = grid.querySelectorAll(".card").length;
   countEl.innerText = `You have ${total} upcoming event${total !== 1 ? "s" : ""}`;
 
   lucide.createIcons();
 }
 
+async function deleteEvent(eventId, btn) {
+  if (!confirm("Are you sure you want to delete this event?")) return;
+  const res  = await fetch(`/event/${eventId}`, { method: "DELETE" });
+  const data = await res.json();
+  if (data.success) {
+    const card = btn.closest(".card");
+    card.remove();
+    const grid    = document.getElementById("eventGrid");
+    const total   = grid.querySelectorAll(".card").length;
+    const countEl = document.querySelector(".header p");
+    countEl.innerText = `You have ${total} upcoming event${total !== 1 ? "s" : ""}`;
+    if (total === 0) {
+      grid.innerHTML = `<p style="color:#9ca3af;">No events yet. Create your first one!</p>`;
+    }
+  } else {
+    alert("Failed to delete event.");
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   modal = document.getElementById("modal");
+
+  // Event delegation — handles delete for ALL cards (Jinja-rendered + JS-added)
+  document.getElementById("eventGrid").addEventListener("click", e => {
+    const btn = e.target.closest(".delete-btn");
+    if (btn) deleteEvent(btn.dataset.eventId, btn);
+  });
+
   lucide.createIcons();
 });

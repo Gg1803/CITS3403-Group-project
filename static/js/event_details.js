@@ -1,99 +1,84 @@
-/* event_details.js */
+// Get the event ID from the body data attribute
+const EVENT_ID = document.body.dataset.eventId;
 
+// DOM refs (unchanged)
 const eventTitleInput        = document.getElementById("eventTitle");
 const eventTypeInput         = document.getElementById("eventType");
 const eventDateInput         = document.getElementById("eventDate");
 const eventLocationInput     = document.getElementById("eventLocation");
-
-const displayEventTitle       = document.getElementById("displayEventTitle");
-const displayEventDate        = document.getElementById("displayEventDate");
-const displayEventLocation    = document.getElementById("displayEventLocation");
+const displayEventTitle      = document.getElementById("displayEventTitle");
+const displayEventDate       = document.getElementById("displayEventDate");
+const displayEventLocation   = document.getElementById("displayEventLocation");
 const displayParticipantCount = document.getElementById("displayParticipantCount");
-
-const taskList        = document.getElementById("taskList");
-const timelineList    = document.getElementById("timelineList");
-const participantList = document.getElementById("participantList");
-const pollContainer   = document.getElementById("pollContainer");
-const pollFooter      = document.getElementById("pollFooter");
-
-const taskProgressCount = document.getElementById("taskProgressCount");
-const taskProgressFill  = document.getElementById("taskProgressFill");
-
-const openTaskModalBtn        = document.getElementById("openTaskModal");
-const openTimelineModalBtn    = document.getElementById("openTimelineModal");
+const taskList               = document.getElementById("taskList");
+const timelineList           = document.getElementById("timelineList");
+const participantList        = document.getElementById("participantList");
+const pollContainer          = document.getElementById("pollContainer");
+const pollFooter             = document.getElementById("pollFooter");
+const taskProgressCount      = document.getElementById("taskProgressCount");
+const taskProgressFill       = document.getElementById("taskProgressFill");
+const openTaskModalBtn       = document.getElementById("openTaskModal");
+const openTimelineModalBtn   = document.getElementById("openTimelineModal");
 const openParticipantModalBtn = document.getElementById("openParticipantModal");
-const openPollModalBtn        = document.getElementById("openPollModal");
+const openPollModalBtn       = document.getElementById("openPollModal");
+const taskModal              = document.getElementById("taskModal");
+const timelineModal          = document.getElementById("timelineModal");
+const participantModal       = document.getElementById("participantModal");
+const pollModal              = document.getElementById("pollModal");
+const taskNameInput          = document.getElementById("taskName");
+const taskAssignedToInput    = document.getElementById("taskAssignedTo");
+const addTaskBtn             = document.getElementById("addTaskBtn");
+const timelineStepInput      = document.getElementById("timelineStep");
+const addTimelineBtn         = document.getElementById("addTimelineBtn");
+const participantEmailInput  = document.getElementById("participantName");
+const addParticipantBtn      = document.getElementById("addParticipantBtn");
+const pollQuestionInput      = document.getElementById("pollQuestion");
+const pollOptionsWrapper     = document.getElementById("pollOptionsWrapper");
+const addPollOptionFieldBtn  = document.getElementById("addPollOptionField");
+const createPollBtn          = document.getElementById("createPollBtn");
+const prevPollBtn            = document.getElementById("prevPollBtn");
+const nextPollBtn            = document.getElementById("nextPollBtn");
 
-const taskModal        = document.getElementById("taskModal");
-const timelineModal    = document.getElementById("timelineModal");
-const participantModal = document.getElementById("participantModal");
-const pollModal        = document.getElementById("pollModal");
-
-const taskNameInput       = document.getElementById("taskName");
-const taskAssignedToInput = document.getElementById("taskAssignedTo");
-const addTaskBtn          = document.getElementById("addTaskBtn");
-
-const timelineStepInput = document.getElementById("timelineStep");
-const addTimelineBtn    = document.getElementById("addTimelineBtn");
-
-const participantNameInput = document.getElementById("participantName");
-const addParticipantBtn    = document.getElementById("addParticipantBtn");
-
-const pollQuestionInput     = document.getElementById("pollQuestion");
-const pollOptionsWrapper    = document.getElementById("pollOptionsWrapper");
-const addPollOptionFieldBtn = document.getElementById("addPollOptionField");
-const createPollBtn         = document.getElementById("createPollBtn");
-const prevPollBtn           = document.getElementById("prevPollBtn");
-const nextPollBtn           = document.getElementById("nextPollBtn");
-
-let tasks         = [];
-let timelineSteps = [];
-let participants  = [];
-let polls         = [];
+let polls = [];
 let currentPollIndex = 0;
-let votedOptions = new Set(); // tracks "pollIndex-optionIndex" keys
 
-/* Navigation helper */
 function goTo(page) { window.location.href = page; }
 
-/* Date formatter */
 function formatDate(dateString) {
   if (!dateString) return "-";
   const date = new Date(dateString);
   return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-/* Gradient map (mirrors dashboard) */
+// Gradients map
 const typeGradients = {
-  "beach":    "gradient-teal",
-  "birthday": "gradient-pink",
-  "formal":   "gradient-dark",
-  "festival": "gradient-red",
-  "sports":   "gradient-green",
-  "study":    "gradient-purple"
+  "Beach day":      "gradient-teal",
+  "House party":    "gradient-pink",
+  "Game night":     "gradient-purple",
+  "Hiking/Outdoor": "gradient-green",
+  "Study session":  "gradient-grey",
+  "Sport events":   "gradient-orange",
+  "Food/dining":    "gradient-red",
+  "Movie night":    "gradient-indigo",
+  "Concert/music":  "gradient-concert",
+  "Custom":         "gradient-dark"
 };
 
-/* Theme: apply gradient class to hero card */
 function updateTheme() {
   const heroCard = document.querySelector(".hero-card");
-  // Remove any existing gradient class
   Object.values(typeGradients).forEach(cls => heroCard.classList.remove(cls));
-  const gradClass = typeGradients[eventTypeInput.value] || "gradient-teal";
-  heroCard.classList.add(gradClass);
+  heroCard.classList.add(typeGradients[eventTypeInput.value] || "gradient-teal");
 }
 
-/* Hero card live update */
 function updateTopInfo() {
   displayEventTitle.textContent    = eventTitleInput.value.trim() || "Untitled Event";
   displayEventDate.textContent     = formatDate(eventDateInput.value);
   displayEventLocation.textContent = eventLocationInput.value.trim() || "-";
-  displayParticipantCount.textContent =
-    `${participants.length} participant${participants.length !== 1 ? "s" : ""}`;
   updateTheme();
   lucide.createIcons();
 }
 
-/* Modal helpers */
+/* ── Modal helpers ────────────────────────────────────────────── */
 function openModal(modal)  { modal.classList.remove("hidden"); }
 function closeModal(modal) { modal.classList.add("hidden"); }
 
@@ -109,142 +94,241 @@ document.querySelectorAll("[data-close]").forEach(btn => {
 });
 
 document.querySelectorAll(".modal-overlay").forEach(overlay => {
-  overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(overlay); });
+  overlay.addEventListener("click", e => {
+    if (e.target === overlay) closeModal(overlay);
+  });
 });
 
-/* Task Board */
-function updateTaskProgress() {
+/* ── TASKS ────────────────────────────────────────────────────── */
+function updateTaskProgress(tasks) {
   const total     = tasks.length;
   const completed = tasks.filter(t => t.completed).length;
   taskProgressCount.textContent = `${completed}/${total}`;
   taskProgressFill.style.width  = `${total === 0 ? 0 : (completed / total) * 100}%`;
 }
 
-function renderTasks() {
+function renderTasks(tasks) {
   taskList.innerHTML = "";
-
   if (tasks.length === 0) {
     taskList.innerHTML = `<p class="empty-state">No tasks added yet.</p>`;
-    updateTaskProgress();
+    updateTaskProgress([]);
     return;
   }
-
-  tasks.forEach((task, index) => {
+  tasks.forEach(task => {
     const item = document.createElement("div");
     item.className = `item-card ${task.completed ? "completed-task" : ""}`;
     item.innerHTML = `
       <div class="item-main">
         <div class="item-title">${task.name}</div>
-        <div class="item-subtitle">Assigned to: ${task.assignedTo || "Not assigned"}</div>
+        <div class="item-subtitle">Assigned to: ${task.assigned_to || "Not assigned"}</div>
       </div>
       <div class="item-actions">
         <button class="icon-btn task-complete" type="button">${task.completed ? "Undo" : "Done"}</button>
-        <button class="remove-btn task-delete"  type="button">Remove</button>
+        <button class="remove-btn task-delete" type="button">Remove</button>
       </div>
     `;
-    item.querySelector(".task-complete").addEventListener("click", () => {
-      tasks[index].completed = !tasks[index].completed;
-      renderTasks();
+    item.querySelector(".task-complete").addEventListener("click", async () => {
+      await fetch(`/tasks/${task.id}/toggle`, { method: "POST" });
+      loadTasks();
     });
-    item.querySelector(".task-delete").addEventListener("click", () => {
-      tasks.splice(index, 1);
-      renderTasks();
+    item.querySelector(".task-delete").addEventListener("click", async () => {
+      await fetch(`/tasks/${task.id}`, { method: "DELETE" });
+      loadTasks();
     });
     taskList.appendChild(item);
   });
-
-  updateTaskProgress();
+  updateTaskProgress(tasks);
 }
 
-addTaskBtn.addEventListener("click", () => {
+async function loadTasks() {
+  const res   = await fetch(`/event/${EVENT_ID}/tasks`);
+  const tasks = await res.json();
+  renderTasks(tasks);
+}
+
+addTaskBtn.addEventListener("click", async () => {
   const name       = taskNameInput.value.trim();
   const assignedTo = taskAssignedToInput.value.trim();
   if (!name) return;
-  tasks.push({ name, assignedTo, completed: false });
+  await fetch(`/event/${EVENT_ID}/tasks`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ name, assigned_to: assignedTo })
+  });
   taskNameInput.value       = "";
   taskAssignedToInput.value = "";
   closeModal(taskModal);
-  renderTasks();
+  loadTasks();
 });
 
-/* Timeline */
-function renderTimeline() {
+/* ── TIMELINE ─────────────────────────────────────────────────── */
+function renderTimeline(steps) {
   timelineList.innerHTML = "";
-
-  if (timelineSteps.length === 0) {
+  if (steps.length === 0) {
     timelineList.innerHTML = `<p class="empty-state">No timeline steps yet.</p>`;
     return;
   }
-
-  timelineSteps.forEach((step, index) => {
+  steps.forEach((step, index) => {
     const item = document.createElement("div");
     item.className = "timeline-item";
     item.innerHTML = `
       <div class="timeline-circle">${index + 1}</div>
-      <div class="timeline-text">${step}</div>
+      <div class="timeline-text">${step.step}</div>
       <div class="item-actions">
         <button class="remove-btn timeline-delete" type="button">Remove</button>
       </div>
     `;
-    item.querySelector(".timeline-delete").addEventListener("click", () => {
-      timelineSteps.splice(index, 1);
-      renderTimeline();
+    item.querySelector(".timeline-delete").addEventListener("click", async () => {
+      await fetch(`/timeline/${step.id}`, { method: "DELETE" });
+      loadTimeline();
     });
     timelineList.appendChild(item);
   });
 }
 
-addTimelineBtn.addEventListener("click", () => {
+async function loadTimeline() {
+  const res   = await fetch(`/event/${EVENT_ID}/timeline`);
+  const steps = await res.json();
+  renderTimeline(steps);
+}
+
+addTimelineBtn.addEventListener("click", async () => {
   const step = timelineStepInput.value.trim();
   if (!step) return;
-  timelineSteps.push(step);
+  await fetch(`/event/${EVENT_ID}/timeline`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ step })
+  });
   timelineStepInput.value = "";
   closeModal(timelineModal);
-  renderTimeline();
+  loadTimeline();
 });
 
-/* Participants */
-function renderParticipants() {
+/* ── PARTICIPANTS ─────────────────────────────────────────────── */
+function renderParticipants(participants) {
   participantList.innerHTML = "";
+  displayParticipantCount.textContent =
+    `${participants.length} participant${participants.length !== 1 ? "s" : ""}`;
 
   if (participants.length === 0) {
     participantList.innerHTML = `<p class="empty-state">No participants invited yet.</p>`;
-    updateTopInfo();
     return;
   }
-
-  participants.forEach((participant, index) => {
+  participants.forEach(p => {
     const item = document.createElement("div");
     item.className = "item-card";
     item.innerHTML = `
       <div class="item-main">
-        <div class="item-title">${participant}</div>
-        <div class="item-subtitle">Invited participant</div>
+        <div class="item-title">${p.username}</div>
+        <div class="item-subtitle">Participant</div>
       </div>
       <div class="item-actions">
         <button class="remove-btn participant-delete" type="button">Remove</button>
       </div>
     `;
-    item.querySelector(".participant-delete").addEventListener("click", () => {
-      participants.splice(index, 1);
-      renderParticipants();
+    item.querySelector(".participant-delete").addEventListener("click", async () => {
+      await fetch(`/participants/${p.id}`, { method: "DELETE" });
+      loadParticipants();
     });
     participantList.appendChild(item);
   });
-
-  updateTopInfo();
 }
 
-addParticipantBtn.addEventListener("click", () => {
-  const name = participantNameInput.value.trim();
-  if (!name) return;
-  participants.push(name);
-  participantNameInput.value = "";
+async function loadParticipants() {
+  const res          = await fetch(`/event/${EVENT_ID}/participants`);
+  const participants = await res.json();
+  renderParticipants(participants);
+}
+
+addParticipantBtn.addEventListener("click", async () => {
+  const email = participantEmailInput.value.trim();
+  if (!email) return;
+  const res  = await fetch(`/event/${EVENT_ID}/participants`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ email })
+  });
+  const data = await res.json();
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+  participantEmailInput.value = "";
   closeModal(participantModal);
-  renderParticipants();
+  loadParticipants();
 });
 
-/* Poll */
+/* ── POLLS ────────────────────────────────────────────────────── */
+function renderPoll() {
+  pollContainer.innerHTML = "";
+  if (polls.length === 0) {
+    pollContainer.innerHTML = `<p class="empty-state">No polls created yet.</p>`;
+    pollFooter.textContent = "0/0";
+    prevPollBtn.disabled = true;
+    nextPollBtn.disabled = true;
+    return;
+  }
+
+  const poll       = polls[currentPollIndex];
+  const totalVotes = poll.options.reduce((sum, o) => sum + o.votes, 0);
+
+  const qEl = document.createElement("div");
+  qEl.className   = "poll-question-title";
+  qEl.textContent = poll.question;
+  pollContainer.appendChild(qEl);
+
+  const optList = document.createElement("div");
+  optList.className = "poll-options-list";
+
+  const sorted = [...poll.options]
+    .sort((a, b) => b.votes - a.votes);
+
+  sorted.forEach(option => {
+    const actualPct  = totalVotes === 0 ? 0 : Math.round((option.votes / totalVotes) * 100);
+    const visiblePct = totalVotes === 0 ? 12 : Math.max(actualPct, 6);
+
+    const el = document.createElement("div");
+    el.className = "poll-option-display";
+    el.innerHTML = `
+      <div class="poll-option-top">
+        <span class="poll-option-name">${option.text}</span>
+        <span class="poll-option-votes">${option.votes} votes · ${actualPct}%</span>
+      </div>
+      <div class="poll-bar">
+        <div class="poll-fill color-vote" style="width:${visiblePct}%"></div>
+      </div>
+      <button class="vote-btn vote-option" type="button"
+              data-poll-id="${poll.id}" data-option-id="${option.id}">Vote</button>
+    `;
+    optList.appendChild(el);
+  });
+
+  pollContainer.appendChild(optList);
+
+  // Attach vote button listeners
+  optList.querySelectorAll(".vote-option").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const pollId   = btn.dataset.pollId;
+      const optionId = btn.dataset.optionId;
+      const res      = await fetch(`/polls/${pollId}/vote/${optionId}`, { method: "POST" });
+      const data     = await res.json();
+      if (data.error) { alert(data.error); return; }
+      await loadPolls();
+    });
+  });
+
+  pollFooter.textContent = `${currentPollIndex + 1}/${polls.length}`;
+  prevPollBtn.disabled   = currentPollIndex === 0;
+  nextPollBtn.disabled   = currentPollIndex === polls.length - 1;
+}
+
+async function loadPolls() {
+  const res = await fetch(`/event/${EVENT_ID}/polls`);
+  polls     = await res.json();
+  renderPoll();
+}
+
 function resetPollForm() {
   pollQuestionInput.value = "";
   pollOptionsWrapper.innerHTML = `
@@ -261,7 +345,7 @@ function resetPollForm() {
 
 addPollOptionFieldBtn.addEventListener("click", () => {
   const count = pollOptionsWrapper.querySelectorAll(".poll-option-input").length + 1;
-  const el = document.createElement("div");
+  const el    = document.createElement("div");
   el.className = "field-group poll-option-field";
   el.innerHTML = `
     <label>Option ${count}</label>
@@ -270,91 +354,24 @@ addPollOptionFieldBtn.addEventListener("click", () => {
   pollOptionsWrapper.appendChild(el);
 });
 
-function renderPoll() {
-  pollContainer.innerHTML = "";
-
-  if (polls.length === 0) {
-    pollContainer.innerHTML = `<p class="empty-state">No polls created yet.</p>`;
-    pollFooter.textContent = "0/0";
-    prevPollBtn.disabled = true;
-    nextPollBtn.disabled = true;
-    return;
-  }
-
-  const poll = polls[currentPollIndex];
-  const totalVotes = poll.options.reduce((sum, o) => sum + o.votes, 0);
-
-  /* Question */
-  const qEl = document.createElement("div");
-  qEl.className = "poll-question-title";
-  qEl.textContent = poll.question;
-  pollContainer.appendChild(qEl);
-
-  /* Options sorted by votes descending, original index kept for data mutation */
-  const optList = document.createElement("div");
-  optList.className = "poll-options-list";
-
-  const sorted = poll.options
-    .map((option, originalIndex) => ({ option, originalIndex }))
-    .sort((a, b) => b.option.votes - a.option.votes);
-
-  sorted.forEach(({ option, originalIndex }, sortedIndex) => {
-    const actualPct  = totalVotes === 0 ? 0 : Math.round((option.votes / totalVotes) * 100);
-    const visiblePct = totalVotes === 0 ? 12 : Math.max(actualPct, 6);
-    const colorClass = `color-vote`;
-    const voteKey    = `${currentPollIndex}-${originalIndex}`;
-    const hasVoted   = votedOptions.has(voteKey);
-
-    const el = document.createElement("div");
-    el.className = "poll-option-display";
-    el.innerHTML = `
-      <div class="poll-option-top">
-        <span class="poll-option-name">${option.name}</span>
-        <span class="poll-option-votes">${option.votes} votes · ${actualPct}%</span>
-      </div>
-      <div class="poll-bar">
-        <div class="poll-fill ${colorClass}" style="width:${visiblePct}%"></div>
-      </div>
-      <button class="vote-btn" type="button">${hasVoted ? "Voted" : "Vote"}</button>
-    `;
-
-    const voteBtn = el.querySelector(".vote-btn");
-    if (hasVoted) {
-      voteBtn.disabled = true;
-    } else {
-      voteBtn.addEventListener("click", () => {
-        polls[currentPollIndex].options[originalIndex].votes += 1;
-        votedOptions.add(voteKey);
-        renderPoll();
-      });
-    }
-
-    optList.appendChild(el);
-  });
-
-  pollContainer.appendChild(optList);
-
-  pollFooter.textContent = `${currentPollIndex + 1}/${polls.length}`;
-  prevPollBtn.disabled   = currentPollIndex === 0;
-  nextPollBtn.disabled   = currentPollIndex === polls.length - 1;
-}
-
-createPollBtn.addEventListener("click", () => {
+createPollBtn.addEventListener("click", async () => {
   const question = pollQuestionInput.value.trim();
   const options  = Array.from(document.querySelectorAll(".poll-option-input"))
-    .map(i => i.value.trim())
-    .filter(Boolean)
-    .map(name => ({ name, votes: 0 }));
-
+    .map(i => i.value.trim()).filter(Boolean);
   if (!question || options.length < 2) {
     alert("Please enter a question and at least 2 options.");
     return;
   }
-
-  polls.push({ question, options });
-  currentPollIndex = polls.length - 1;
+  await fetch(`/event/${EVENT_ID}/polls`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ question, options })
+  });
+  currentPollIndex = polls.length; // will point to new poll after reload
   resetPollForm();
   closeModal(pollModal);
+  await loadPolls();
+  currentPollIndex = polls.length - 1;
   renderPoll();
 });
 
@@ -365,16 +382,39 @@ nextPollBtn.addEventListener("click", () => {
   if (currentPollIndex < polls.length - 1) { currentPollIndex++; renderPoll(); }
 });
 
-/* Live edit listeners */
+/* ── Live edit strip listeners ────────────────────────────────── */
 eventTitleInput.addEventListener("input",    updateTopInfo);
 eventTypeInput.addEventListener("change",    updateTopInfo);
 eventDateInput.addEventListener("input",     updateTopInfo);
 eventLocationInput.addEventListener("input", updateTopInfo);
 
-/* Init  */
-updateTopInfo();
-renderTasks();
-renderTimeline();
-renderParticipants();
-renderPoll();
-lucide.createIcons();
+/* ── Save event details ───────────────────────────────────────── */
+async function saveEvent() {
+  const res = await fetch(`/event/${EVENT_ID}`, {
+    method:  "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({
+      title:      eventTitleInput.value.trim(),
+      event_type: eventTypeInput.value,
+      date:       eventDateInput.value,
+      location:   eventLocationInput.value.trim()
+    })
+  });
+  const data = await res.json();
+  if (data.success) {
+    updateTopInfo();
+    alert("Event saved!");
+  } else {
+    alert("Failed to save.");
+  }
+}
+
+/* Init - load everything from DB on page load */
+document.addEventListener("DOMContentLoaded", () => {
+  updateTopInfo();
+  loadTasks();
+  loadTimeline();
+  loadParticipants();
+  loadPolls();
+  lucide.createIcons();
+});

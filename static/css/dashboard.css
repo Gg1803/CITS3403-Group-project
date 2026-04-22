@@ -137,6 +137,22 @@ body {
 
 .view-btn:hover { background: #f1f5f9; }
 
+.delete-btn {
+  flex: 1;
+  padding: 9px;
+  border-radius: 999px;
+  border: none;
+  background: #fee2e2;
+  color: #dc2626;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: "Poppins", sans-serif;
+  transition: 0.2s;
+  font-size: 0.85rem;
+}
+
+.delete-btn:hover { background: #fecaca; }
+
 /* MODAL */
 .modal {
   position: fixed;

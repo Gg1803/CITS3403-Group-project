@@ -119,6 +119,32 @@ def create_event():
         "participants": 0
     })
 
+# AJAX - DELETE EVENT
+@app.route("/event/<int:event_id>", methods=["DELETE"])
+@login_required
+def delete_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    if event.user_id != current_user.id:
+        return jsonify({"error": "Unauthorised"}), 403
+    db.session.delete(event)
+    db.session.commit()
+    return jsonify({"success": True})
+
+# AJAX - UPDATE EVENT
+@app.route("/event/<int:event_id>", methods=["PATCH"])
+@login_required
+def update_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    if event.user_id != current_user.id:
+        return jsonify({"error": "Unauthorised"}), 403
+    data = request.get_json()
+    event.title      = data.get("title", event.title)
+    event.event_type = data.get("event_type", event.event_type)
+    event.event_date = datetime.strptime(data.get("date"), "%Y-%m-%d") if data.get("date") else event.event_date
+    event.location   = data.get("location", event.location)
+    db.session.commit()
+    return jsonify({"success": True})
+
 # AJAX - TASKS
 @app.route("/event/<int:event_id>/tasks", methods=["GET"])
 @login_required

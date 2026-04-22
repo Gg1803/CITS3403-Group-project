@@ -68,14 +68,17 @@
         </div>
         <div class="card-footer">
           <a class="view-btn" href="/event-details/{{ event.id }}">View Details</a>
+          <button class="delete-btn" data-event-id="{{ event.id }}">Delete</button>
         </div>
       </div>
       {% else %}
       <p style="color:#9ca3af;">No events yet. Create your first one!</p>
       {% endfor %}
-    </div>
+    </div><!-- /grid -->
 
-  <!-- MODAL -->
+  </div><!-- /container -->
+
+  <!-- MODAL (outside container, inside body) -->
   <div class="modal" id="modal">
     <div class="modal-content card" onclick="event.stopPropagation()">
       <h2>Create Event</h2>
@@ -123,5 +126,6 @@
       <button class="create-btn" onclick="submitEvent()">Create</button>
     </div>
   </div>
+
 </body>
 </html>
