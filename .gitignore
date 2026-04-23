@@ -5,5 +5,8 @@ __pycache__/
 # Database
 instance/database.db
 
+# Environment variables
+.env
+
 # Mac
 .DS_Store

@@ -3,10 +3,14 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from models import db, User, Event, Participant, Invitation, Task, Timeline, Poll, PollOption, Vote
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # loads variables from .env
 
 app = Flask(__name__)
-app.secret_key = "your-secret-key-change-this"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+app.secret_key = os.environ.get("SECRET_KEY")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///database.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
@@ -309,16 +313,11 @@ def update_profile():
 @login_required
 def update_password():
     data = request.get_json()
-    from werkzeug.security import check_password_hash, generate_password_hash
     if not check_password_hash(current_user.password_hash, data.get("current")):
         return jsonify({"error": "Current password is incorrect"}), 400
     current_user.password_hash = generate_password_hash(data.get("new"))
     db.session.commit()
     return jsonify({"success": True})
-
-# INIT
-with app.app_context():
-    db.create_all()
 
 if __name__ == "__main__":
     app.run(debug=True)
