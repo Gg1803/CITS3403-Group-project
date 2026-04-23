@@ -16,81 +16,152 @@ Eventure is a full-stack web application built using:
 - **Backend:** Flask (Python)  
 - **Database:** SQLite (via Flask-SQLAlchemy)  
 
-The application allows users to:
-- View and discover events  
-- Manage invitations  
-- View event details  
-- Access a personal dashboard and profile  
+The system allows users to:
 
-## 📁 Project Structure
+- create and manage events
+- discover public events
+- view event details
+- invite participants
+- manage tasks and timelines
+- create polls and vote on options
+- view invitations and profile details
 
+## Main Features
+
+### Event Management
+Users can create events with a title, description, date, location, type, and visibility setting.
+
+### Discover Page
+Public events are shown on the discover page so users can browse and join available events.
+
+### Invitations
+Invitations can be created for a specific event and linked to registered users in the database.
+
+### Participants
+Users can join events and appear in the participant list.
+
+### Task Board
+Each event can include tasks that help organise responsibilities.
+
+### Timeline
+Each event can include timeline steps to plan the flow of activities.
+
+### Polls and Voting
+Polls can be created for an event, with multiple options, and users can vote on them.
+
+### Seed Data
+A `seed.py` file is included to populate the database with sample users, events, invitations, tasks, timelines, polls, and votes for testing and demonstration.  
+
+## Project Structure
+
+```text
 CITS3403-Group-project/
 │
-├── app.py # Main Flask application
+├── app.py
+├── seed.py
+├── models.py
+├── requirements.txt
+├── README.md
+│
 ├── instance/
-│ └── database.db # SQLite database (auto-generated)
+│   └── database.db
 │
-├── templates/ # HTML files (Flask templates)
-│ ├── login_signup.html
-│ ├── dashboard.html
-│ ├── discover.html
-│ ├── event_details.html
-│ ├── invitation_page.html
-│ └── profile.html
+├── templates/
+│   ├── login_signup.html
+│   ├── dashboard.html
+│   ├── discover.html
+│   ├── event_details.html
+│   ├── invitation_page.html
+│   └── profile.html
 │
-├── static/ # Static assets
-│ ├── css/
-│ └── js/
+├── static/
+│   ├── css/
+│   └── js/
 │
-└── README.md
+└── meeting minutes/
 
-
----
+```
 
 ## ⚙️ Setup Instructions
 
 ### 1. Clone the repository
+
 ```bash
 git clone https://github.com/Gg1803/CITS3403-Group-project.git
 cd CITS3403-Group-project
 ```
-2. Create a virtual environment
+
+2. Create and activate a virtual environment
+
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
 3. Install dependencies
+
 ```bash
-pip install flask flask-sqlalchemy
+pip install flask flask-sqlalchemy werkzeug flask-login
 ```
 Or (if requirements.txt is available):
+
 ```bash
 pip install -r requirements.txt
 ```
+4. Seed the database
 
-4. Run the application
+```bash
+python seed.py
+```
+This will create the database and populate it with sample data.
+
+5. Run the application
+
 ```bash
 python app.py
 ```
-5. Open in browser
+
+6. Open in browser
+
 ```bash
 http://127.0.0.1:5000
 ```
 
 ## Available Routes
 
-| Route            | Description         |
-| ---------------- | ------------------- |
-| `/` or `/login`  | Login / Signup page |
-| `/dashboard`     | User dashboard      |
-| `/discover`      | Discover events     |
-| `/event-details` | Event details page  |
-| `/invitations`   | Invitations page    |
-| `/profile`       | User profile        |
+| Route                           | Description                        |
+| ------------------------------- | ---------------------------------- |
+| `/` or `/login`                 | Login / signup page                |
+| `/dashboard`                    | Main dashboard showing events      |
+| `/discover`                     | Page for browsing public events    |
+| `/event-details/<event_id>`     | Detailed page for a selected event |
+| `/invitations/<event_id>`       | Invitations for a selected event   |
+| `/profile`                      | User profile page                  |
+| `/create-event`                 | Create a new event                 |
+| `/create-invitation/<event_id>` | Create an invitation for an event  |
+| `/join-event/<event_id>`        | Join an event                      |
+| `/add-task/<event_id>`          | Add a task to an event             |
+| `/add-timeline/<event_id>`      | Add a timeline step to an event    |
+| `/add-poll/<event_id>`          | Add a poll to an event             |
+| `/vote/<option_id>`             | Vote on a poll option              |
+
 
 🗄️ Database
-Uses SQLite
-File: instance/database.db
-Automatically created when the app runs
+The project uses SQLite as its database.
 
+The database file is created automatically when the project runs and is stored in:
+
+```bash
+instance/database.db
+```
+The database includes models for:
+
+User
+Event
+Participant
+Invitation
+Task
+Timeline
+Poll
+PollOption
+Vote
