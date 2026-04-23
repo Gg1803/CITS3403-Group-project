@@ -30,36 +30,52 @@
 
       <!-- Toggle -->
       <div class="toggle">
-        <button id="loginBtn" class="active">Log In</button>
-        <button id="signupBtn">Sign Up</button>
+        <button id="loginBtn" class="active" type="button">Log In</button>
+        <button id="signupBtn" type="button">Sign Up</button>
       </div>
 
-      <!-- Form -->
-      <form id="form" onsubmit="return false;">
-
-        <!-- Name (sign up only) -->
-        <div id="nameField" class="input-group hidden">
-          <label for="nameInput">Full Name</label>
-          <input id="nameInput" type="text" placeholder="Your name" />
-        </div>
-
+      <!-- LOGIN FORM -->
+      <form id="loginForm" method="POST" action="/login">
         <div class="input-group">
-          <label for="emailInput">Email</label>
-          <input id="emailInput" type="email" placeholder="you@example.com" />
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" name="email" type="email"
+                 placeholder="you@example.com"
+                 value="{{ prefill_email }}" required />
         </div>
-
         <div class="input-group">
-          <label for="passwordInput">Password</label>
-          <input id="passwordInput" type="password" placeholder="Enter your password" />
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" name="password" type="password"
+                 placeholder="Enter your password" required />
         </div>
-
-        <button type="button" class="main-button" id="submitBtn">Log In</button>
-
+        <button type="submit" class="main-button">Log In</button>
+      </form>
+      
+      <!-- SIGNUP FORM (hidden by default) -->
+      <form id="signupForm" method="POST" action="/signup" class="hidden">
+        <div class="input-group">
+          <label for="signupUsername">Username</label>
+          <input id="signupUsername" name="username" type="text" placeholder="Your username" required />
+        </div>
+        <div class="input-group">
+          <label for="signupEmail">Email</label>
+          <input id="signupEmail" name="email" type="email" placeholder="you@example.com" required />
+        </div>
+        <div class="input-group">
+          <label for="signupPassword">Password</label>
+          <input id="signupPassword" name="password" type="password" placeholder="Choose a password" required />
+        </div>
+        <button type="submit" class="main-button">Create Account</button>
       </form>
 
       <div class="small-text" id="extraText">Forgot password?</div>
 
     </div>
+
+    <!-- Error message -->
+    {% if error %}
+    <div class="login-error">{{ error }}</div>
+    {% endif %}
+
   </div>
 
   <script src="{{ url_for('static', filename='js/login_signup.js') }}"></script>
