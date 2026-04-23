@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/event_details.css') }}">
 </head>
 
-<body class="theme-beach">
+<body data-event-id="{{ event.id }}"></body>
 <div class="page-wrapper">
 
   <!-- TOPBAR -->
@@ -34,20 +34,22 @@
   </div>
 
   <!-- HERO CARD -->
-  <div class="hero-card">
-    <div class="hero-top">
-      <p class="hero-label">CREATED BY ME</p>
-      <h1 class="hero-title" id="displayEventTitle">Beach Day Bonanza</h1>
+  <div class="hero-card" id="heroCard">
+    <div class="hero-top" style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div>
+        <p class="hero-label">CREATED BY ME</p>
+        <h1 class="hero-title" id="displayEventTitle">{{ event.title }}</h1>
+      </div>
     </div>
 
     <div class="hero-meta">
       <div class="meta-pill">
         <i data-lucide="calendar"></i>
-        <span id="displayEventDate">25 Mar 2026</span>
+        <span id="displayEventDate">{{ event.event_date.strftime('%d %b %Y') if event.event_date else '-' }}</span>
       </div>
       <div class="meta-pill">
         <i data-lucide="map-pin"></i>
-        <span id="displayEventLocation">Cottesloe Beach</span>
+        <span id="displayEventLocation">{{ event.location or '-' }}</span>
       </div>
       <div class="meta-pill">
         <i data-lucide="users"></i>
@@ -56,32 +58,48 @@
     </div>
   </div>
 
-  <!-- EDIT STRIP -->
+  <!-- EDIT STRIP — type options must match exact strings stored in DB -->
   <div class="edit-strip">
     <div class="edit-grid">
       <div class="field-group">
         <label for="eventTitle">Event Title</label>
-        <input id="eventTitle" type="text" value="Beach Day Bonanza" />
+        <input id="eventTitle" type="text" value="{{ event.title }}" />
       </div>
       <div class="field-group">
         <label for="eventType">Event Type</label>
         <select id="eventType">
-          <option value="beach" selected>Beach</option>
-          <option value="birthday">Birthday</option>
-          <option value="formal">Formal</option>
-          <option value="festival">Festival</option>
-          <option value="sports">Sports</option>
-          <option value="study">Study</option>
+          <option value="Beach day"      {% if event.event_type == 'Beach day' %}selected{% endif %}>Beach day</option>
+          <option value="House party"    {% if event.event_type == 'House party' %}selected{% endif %}>House party</option>
+          <option value="Game night"     {% if event.event_type == 'Game night' %}selected{% endif %}>Game night</option>
+          <option value="Hiking/Outdoor" {% if event.event_type == 'Hiking/Outdoor' %}selected{% endif %}>Hiking/Outdoor</option>
+          <option value="Study session"  {% if event.event_type == 'Study session' %}selected{% endif %}>Study session</option>
+          <option value="Sport events"   {% if event.event_type == 'Sport events' %}selected{% endif %}>Sport events</option>
+          <option value="Food/dining"    {% if event.event_type == 'Food/dining' %}selected{% endif %}>Food/dining</option>
+          <option value="Movie night"    {% if event.event_type == 'Movie night' %}selected{% endif %}>Movie night</option>
+          <option value="Concert/music"  {% if event.event_type == 'Concert/music' %}selected{% endif %}>Concert/music</option>
+          <option value="Custom"         {% if event.event_type not in ['Beach day','House party','Game night','Hiking/Outdoor','Study session','Sport events','Food/dining','Movie night','Concert/music'] %}selected{% endif %}>Custom</option>
         </select>
       </div>
       <div class="field-group">
         <label for="eventDate">Date</label>
-        <input id="eventDate" type="date" value="2026-03-25" />
+        <input id="eventDate" type="date" value="{{ event.event_date.strftime('%Y-%m-%d') if event.event_date else '' }}" />
       </div>
       <div class="field-group">
         <label for="eventLocation">Location</label>
-        <input id="eventLocation" type="text" value="Cottesloe Beach" />
+        <input id="eventLocation" type="text" value="{{ event.location or '' }}" />
       </div>
+      <div class="field-group">
+        <label for="eventDescription">Description</label>
+        <input id="eventDescription" type="text" value="{{ event.description or '' }}" />
+      </div>
+      <div class="field-group">
+        <label for="eventVisibility">Visibility</label>
+        <select id="eventVisibility">
+          <option value="private" {% if not event.is_public %}selected{% endif %}>Private</option>
+          <option value="public" {% if event.is_public %}selected{% endif %}>Public</option>
+        </select>
+      </div>
+      <button class="save-btn" onclick="saveEvent()">Save</button>
     </div>
   </div>
 
@@ -214,8 +232,8 @@
     </div>
     <div class="modal-body">
       <div class="field-group">
-        <label for="participantName">Name</label>
-        <input id="participantName" type="text" placeholder="Search or enter name" />
+        <label for="participantName">Email address</label>
+        <input id="participantName" type="email" placeholder="Enter user's email" />
       </div>
     </div>
     <div class="modal-footer">

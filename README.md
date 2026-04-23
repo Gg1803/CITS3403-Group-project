@@ -1,4 +1,4 @@
-# Eventure  
+# Eventure 🎉  
 A web-based event management platform that allows users to discover, create, and manage events.
 
 ## Group Members
@@ -10,7 +10,7 @@ A web-based event management platform that allows users to discover, create, and
 | 24092758   | Yiming Ding | [@Vincent0301](https://github.com/Vincent0301)         |
 | 23986759   | Zihan He    | [@AnnieH0826](https://github.com/AnnieH0826)           |
 
-## Project Overview
+## 🚀 Project Overview
 Eventure is a full-stack web application built using:
 - **Frontend:** HTML, CSS, JavaScript  
 - **Backend:** Flask (Python)  

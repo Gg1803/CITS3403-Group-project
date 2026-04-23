@@ -140,6 +140,18 @@ input[type="text"]:focus {
   background: #fff;
 }
 
+.login-error {
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  margin-top: 12px;
+  text-align: center;
+  width: 100%;
+}
+
 /* Primary button */
 .main-button {
   width: 100%;
