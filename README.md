@@ -1,4 +1,4 @@
-# Eventure 🎉  
+# Eventure
 A web-based event management platform that allows users to discover, create, and manage events.
 
 ## Group Members
@@ -10,7 +10,7 @@ A web-based event management platform that allows users to discover, create, and
 | 24092758   | Yiming Ding | [@Vincent0301](https://github.com/Vincent0301)         |
 | 23986759   | Zihan He    | [@AnnieH0826](https://github.com/AnnieH0826)           |
 
-## 🚀 Project Overview
+## Project Overview
 Eventure is a full-stack web application built using:
 - **Frontend:** HTML, CSS, JavaScript  
 - **Backend:** Flask (Python)  
@@ -28,7 +28,7 @@ The system allows users to:
 
 ## Main Features
 
-### Event Management
+### Dashboard
 Users can create events with a title, description, date, location, type, and visibility setting.
 
 ### Discover Page
@@ -82,7 +82,7 @@ CITS3403-Group-project/
 
 ```
 
-## ⚙️ Setup Instructions
+## Setup Instructions
 
 ### 1. Clone the repository
 
@@ -90,15 +90,23 @@ CITS3403-Group-project/
 git clone https://github.com/Gg1803/CITS3403-Group-project.git
 cd CITS3403-Group-project
 ```
+### 2. Setup environment variables
 
-2. Create and activate a virtual environment
+Create a .env file in the project root (same level as app.py):
+
+```bash
+SECRET_KEY=your-very-long-random-secret-key-change-this
+DATABASE_URL=sqlite:///database.db
+```
+
+### 3. Create and activate a virtual environment
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
-3. Install dependencies
+### 4. Install dependencies
 
 ```bash
 pip install flask flask-sqlalchemy werkzeug flask-login
@@ -108,20 +116,20 @@ Or (if requirements.txt is available):
 ```bash
 pip install -r requirements.txt
 ```
-4. Seed the database
+### 5. Seed the database
 
 ```bash
 python seed.py
 ```
-This will create the database and populate it with sample data.
+This will create the database and populate it with sample data. You'll see "Database seeded successfully" when done. Every time after that just run the application (Step 5)
 
-5. Run the application
+### 6. Run the application
 
 ```bash
 python app.py
 ```
 
-6. Open in browser
+### 7. Open in browser
 
 ```bash
 http://127.0.0.1:5000
@@ -146,7 +154,7 @@ http://127.0.0.1:5000
 | `/vote/<option_id>`             | Vote on a poll option              |
 
 
-🗄️ Database
+## Database
 The project uses SQLite as its database.
 
 The database file is created automatically when the project runs and is stored in:
