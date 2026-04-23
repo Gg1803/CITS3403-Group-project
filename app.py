@@ -88,7 +88,21 @@ def discover():
 @login_required
 def event_details(event_id):
     event = Event.query.get_or_404(event_id)
-    return render_template("event_details.html", event=event)
+    participants = Participant.query.filter_by(event_id=event_id).all()
+    invitations = Invitation.query.filter_by(event_id=event_id).all()
+    tasks = Task.query.filter_by(event_id=event_id).all()
+    timelines = Timeline.query.filter_by(event_id=event_id).order_by(Timeline.order.asc()).all()
+    polls = Poll.query.filter_by(event_id=event_id).all()
+
+    return render_template(
+        "event_details.html",
+        event=event,
+        participants=participants,
+        invitations=invitations,
+        tasks=tasks,
+        timelines=timelines,
+        polls=polls
+    )
 
 @app.route("/invitations")
 @login_required
