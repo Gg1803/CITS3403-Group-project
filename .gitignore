@@ -7,3 +7,4 @@ instance/database.db
 
 # Mac
 .DS_Storeinstance/database.db
+.DS_Store
