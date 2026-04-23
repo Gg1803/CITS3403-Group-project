@@ -38,12 +38,56 @@ body {
   box-shadow: 0 6px 14px rgba(79, 140, 255, 0.25);
 }
 
+/* Filter group */ 
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 8px 16px 8px 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.filter-icon {
+  color: #4f8cff;
+  display: flex;
+  align-items: center;
+}
+
+.filter-icon svg { width: 17px; height: 17px; }
+
+.filter-group select {
+  border: none;
+  outline: none;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1f2933;
+  background: transparent;
+  cursor: pointer;
+}
+
+
 /* GRID */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 18px;
 }
+
+/* CARD BADGES */
+.card-badge.badge-teal    { background: linear-gradient(135deg, #0ea89a, #4dd9cc); color: #fff; }
+.card-badge.badge-pink    { background: linear-gradient(135deg, #d6407a, #f090b8); color: #fff; }
+.card-badge.badge-purple  { background: linear-gradient(135deg, #6d74e8, #9da8f0); color: #fff; }
+.card-badge.badge-green   { background: linear-gradient(135deg, #3aab72, #63c99a); color: #fff; }
+.card-badge.badge-grey    { background: linear-gradient(135deg, #8b95a5, #b8c4d0); color: #fff; }
+.card-badge.badge-orange  { background: linear-gradient(135deg, #e8920a, #f5b445); color: #fff; }
+.card-badge.badge-red     { background: linear-gradient(135deg, #d94040, #f07070); color: #fff; }
+.card-badge.badge-indigo  { background: linear-gradient(135deg, #4f52d6, #8b90e8); color: #fff; }
+.card-badge.badge-concert { background: linear-gradient(135deg, #7a3fa0, #c084e0); color: #fff; }
+.card-badge.badge-dark    { background: linear-gradient(135deg, #3d4a5c, #6b7a8d); color: #fff; }
 
 /* CARD */
 .card {
@@ -104,6 +148,8 @@ body {
   border-radius: 999px;
   padding: 3px 10px;
   white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .card-badge.public {
@@ -121,7 +167,7 @@ body {
 .card-top-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;   
+  align-items: flex-start;
   gap: 10px;
   margin-bottom: 8px;
 }
@@ -131,10 +177,13 @@ body {
   font-weight: 700;
   color: #1f2933;
   margin: 0;
-  flex: 1;              
+  flex: 1;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;  
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.3;
+  min-height: 2.6em;
 }
 
 .card-content {
@@ -196,6 +245,23 @@ body {
 }
 
 .delete-btn:hover { background: #fecaca; }
+
+.leave-btn {
+  flex: 1;
+  padding: 9px;
+  border-radius: 999px;
+  border: none;
+  background: #fee2e2;
+  color: #dc2626;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: "Poppins", sans-serif;
+  transition: 0.2s;
+  font-size: 0.85rem;
+}
+
+.leave-btn:hover { background: #fecaca; }
+
 
 /* MODAL */
 .modal {

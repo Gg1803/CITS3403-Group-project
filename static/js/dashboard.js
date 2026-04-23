@@ -20,6 +20,30 @@ function closeModal() { modal.style.display = "none"; }
 
 window.onclick = e => { if (e.target === modal) closeModal(); };
 
+// Filter functions
+function filterOwned() {
+  const val = document.getElementById("ownedTypeFilter").value;
+  document.querySelectorAll("#ownedGrid .card").forEach(card => {
+    card.style.display = val === "all" || card.dataset.type === val ? "" : "none";
+  });
+}
+
+function filterJoined() {
+  const val = document.getElementById("joinedTypeFilter").value;
+  document.querySelectorAll("#joinedGrid .card").forEach(card => {
+    card.style.display = val === "all" || card.dataset.type === val ? "" : "none";
+  });
+}
+
+// Update total count in header
+function updateEventCount() {
+  const owned  = document.querySelectorAll("#ownedGrid .card").length;
+  const joined = document.querySelectorAll("#joinedGrid .card").length;
+  const total  = owned + joined;
+  document.getElementById("eventCountText").innerText =
+    `You have ${total} upcoming event${total !== 1 ? "s" : ""}`;
+}
+
 function updateCharCount() {
   const desc    = document.getElementById("desc");
   const counter = document.getElementById("charCount");
@@ -91,7 +115,7 @@ function addEventCard(e) {
   const descHTML = e.description
     ? `<p><i data-lucide="align-left"></i> ${e.description}</p>` : "";
 
-  const grid = document.getElementById("eventGrid");
+  const grid = document.getElementById("ownedGrid");
 
   // Remove "no events" message if present
   const empty = grid.querySelector("p");
@@ -100,6 +124,7 @@ function addEventCard(e) {
   // Create card as element so we can attach listener properly
   const card = document.createElement("div");
   card.className = "card";
+  card.dataset.type = e.event_type;
   card.innerHTML = `
     <div class="card-image-wrap">
       <img class="card-image"
@@ -129,10 +154,7 @@ function addEventCard(e) {
   `;
   grid.appendChild(card);
 
-  // Update event count
-  const countEl = document.querySelector(".header p");
-  const total   = grid.querySelectorAll(".card").length;
-  countEl.innerText = `You have ${total} upcoming event${total !== 1 ? "s" : ""}`;
+  updateEventCount();
 
   lucide.createIcons();
 }
@@ -144,12 +166,11 @@ async function deleteEvent(eventId, btn) {
   if (data.success) {
     const card = btn.closest(".card");
     card.remove();
-    const grid    = document.getElementById("eventGrid");
+    updateEventCount();
+    const grid = document.getElementById("ownedGrid");
     const total   = grid.querySelectorAll(".card").length;
-    const countEl = document.querySelector(".header p");
-    countEl.innerText = `You have ${total} upcoming event${total !== 1 ? "s" : ""}`;
     if (total === 0) {
-      grid.innerHTML = `<p style="color:#9ca3af;">No events yet. Create your first one!</p>`;
+      grid.innerHTML = `<p style="color:#9ca3af;">No events created yet.</p>`;
     }
   } else {
     alert("Failed to delete event.");
@@ -159,11 +180,34 @@ async function deleteEvent(eventId, btn) {
 document.addEventListener("DOMContentLoaded", () => {
   modal = document.getElementById("modal");
 
-  // Event delegation — handles delete for ALL cards (Jinja-rendered + JS-added)
-  document.getElementById("eventGrid").addEventListener("click", e => {
+  // Delete — owned events
+  document.getElementById("ownedGrid").addEventListener("click", e => {
     const btn = e.target.closest(".delete-btn");
     if (btn) deleteEvent(btn.dataset.eventId, btn);
   });
 
+  // Leave — joined events
+  document.getElementById("joinedGrid").addEventListener("click", async e => {
+    const btn = e.target.closest(".leave-btn");
+    if (!btn) return;
+    if (!confirm("Leave this event?")) return;
+
+    const eventId = btn.dataset.eventId;
+    const res     = await fetch(`/event/${eventId}/leave`, { method: "DELETE" });
+    const data    = await res.json();
+
+    if (data.success) {
+      btn.closest(".card").remove();
+      updateEventCount();
+      if (document.querySelectorAll("#joinedGrid .card").length === 0) {
+        document.getElementById("joinedGrid").innerHTML =
+          `<p style="color:#9ca3af;">No joined events yet.</p>`;
+      }
+    } else {
+      alert("Failed to leave event.");
+    }
+  });
+
+  updateEventCount();
   lucide.createIcons();
 });

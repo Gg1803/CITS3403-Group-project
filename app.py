@@ -63,16 +63,25 @@ def logout():
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    owned       = Event.query.filter_by(user_id=current_user.id).all()
-    joined_rows = Participant.query.filter_by(user_id=current_user.id).all()
-    joined      = [row.event for row in joined_rows]
-    events      = owned + joined
-    return render_template("dashboard.html", events=events)
+    owned_events = Event.query.filter_by(user_id=current_user.id).all()
+    joined_rows  = Participant.query.filter_by(user_id=current_user.id).all()
+    joined_events = [row.event for row in joined_rows]
+    return render_template("dashboard.html",
+                           owned_events=owned_events,
+                           joined_events=joined_events)
 
 @app.route("/discover")
 @login_required
 def discover():
-    events = Event.query.filter_by(is_public=True).all()
+    # Get event IDs the user created or already joined
+    joined_ids  = {p.event_id for p in Participant.query.filter_by(user_id=current_user.id).all()}
+    owned_ids   = {e.id for e in Event.query.filter_by(user_id=current_user.id).all()}
+    excluded    = joined_ids | owned_ids
+
+    events = Event.query.filter(
+        Event.is_public == True,
+        ~Event.id.in_(excluded)
+    ).all()
     return render_template("discover.html", events=events)
 
 @app.route("/event-details/<int:event_id>")
@@ -298,6 +307,31 @@ def vote(poll_id, option_id):
     db.session.commit()
     option = PollOption.query.get(option_id)
     return jsonify({"option_id": option_id, "votes": len(option.votes)})
+
+# AJAX - JOIN EVENT (discover page)
+@app.route("/event/<int:event_id>/join", methods=["POST"])
+@login_required
+def join_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    existing = Participant.query.filter_by(
+        user_id=current_user.id, event_id=event_id).first()
+    if existing:
+        return jsonify({"error": "Already joined"}), 400
+    p = Participant(user_id=current_user.id, event_id=event_id)
+    db.session.add(p)
+    db.session.commit()
+    participant_count = Participant.query.filter_by(event_id=event_id).count()
+    return jsonify({"success": True, "participants": participant_count})
+
+# AJAX - LEAVE EVENT (discover page)
+@app.route("/event/<int:event_id>/leave", methods=["DELETE"])
+@login_required
+def leave_event(event_id):
+    p = Participant.query.filter_by(
+        user_id=current_user.id, event_id=event_id).first_or_404()
+    db.session.delete(p)
+    db.session.commit()
+    return jsonify({"success": True})
 
 # AJAX - PROFILE UPDATE
 @app.route("/profile/update", methods=["POST"])
