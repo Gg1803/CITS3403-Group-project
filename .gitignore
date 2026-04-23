@@ -9,4 +9,5 @@ instance/database.db
 .env
 
 # Mac
+.DS_Storeinstance/database.db
 .DS_Store
