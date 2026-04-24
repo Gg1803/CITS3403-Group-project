@@ -5,12 +5,15 @@ from datetime import datetime
 from models import db, User, Event, Participant, Invitation, Task, Timeline, Poll, PollOption, Vote
 from dotenv import load_dotenv
 import os
-
-load_dotenv()  # loads variables from .env
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///database.db")
+
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "DATABASE_URL",
+    "sqlite:///database.db"
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
