@@ -1,13 +1,25 @@
 # Python
-venv/
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+env/
 
 # Database
-instance/database.db
+instance/
+*.db
 
-# Environment variables
+# Mac files
+.DS_Store
+__MACOSX/
+
+# Flask
 .env
 
-# Mac
-.DS_Storeinstance/database.db
-.DS_Store
+# IDE
+.vscode/
+.idea/
