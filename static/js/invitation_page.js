@@ -26,7 +26,8 @@ const modalDetailLink = document.getElementById("modalDetailLink");
 const tabButtons = document.querySelectorAll(".tab-btn");
 
 let activeTab = "all";
-let selectedModalEventId = null;
+let invitations = [];
+let selectedModalInvitationId = null;
 
 /* Gradient map (mirrors dashboard exactly) */
 const gradientMap = {
@@ -42,75 +43,18 @@ const gradientMap = {
   "Custom":         "gradient-dark"
 };
 
-/* Sample data */
-let invitations = [
-  {
-    id: 1,
-    type: "Beach day",
-    name: "Beach Day Bonanza",
-    description: "Enjoy a fun beach day with games, snacks, and relaxed group activities.",
-    date: "2026-03-25",
-    location: "Cottesloe Beach",
-    participants: 14,
-    status: "pending",
-    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: 2,
-    type: "Study session",
-    name: "Frontend Study Jam",
-    description: "Review UI pages, discuss pull requests, and align styling across the project.",
-    date: "2026-03-28",
-    location: "UWA Library",
-    participants: 8,
-    status: "pending",
-    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: 3,
-    type: "Sport events",
-    name: "Friday Futsal Meetup",
-    description: "Join a friendly futsal session and meet other students after class.",
-    date: "2026-03-30",
-    location: "UWA Sports Centre",
-    participants: 18,
-    status: "joined",
-    image: "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: 4,
-    type: "Study session",
-    name: "Group Project Planning",
-    description: "Plan tasks, issues, code reviews, and upcoming frontend pages.",
-    date: "2026-04-02",
-    location: "Online",
-    participants: 5,
-    status: "pending",
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: 5,
-    type: "Movie night",
-    name: "Movie Night Hangout",
-    description: "Casual evening with snacks, movie voting, and team relaxation time.",
-    date: "2026-04-04",
-    location: "Student Lounge",
-    participants: 12,
-    status: "declined",
-    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: 6,
-    type: "Custom",
-    name: "Resume Review Session",
-    description: "Improve resume wording, internship highlights, and project descriptions.",
-    date: "2026-04-06",
-    location: "Career Hub",
-    participants: 6,
-    status: "pending",
-    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80"
-  }
-];
+const fallbackImages = {
+  "Beach day": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+  "House party": "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=800&q=80",
+  "Game night": "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=800&q=80",
+  "Hiking/Outdoor": "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=800&q=80",
+  "Study session": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80",
+  "Sport events": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80",
+  "Food/dining": "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=800&q=80",
+  "Movie night": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80",
+  "Concert/music": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80",
+  "Custom": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=800&q=80"
+};
 
 /* Helpers */
 function formatDate(dateString) {
@@ -139,6 +83,55 @@ function getStatusLabel(status) {
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
+function getImage(type) {
+  return fallbackImages[type] || fallbackImages["Custom"];
+}
+
+async function loadInvitations() {
+  invitationGrid.innerHTML = `<div class="empty-state">Loading invitations...</div>`;
+  try {
+    const res = await fetch("/api/invitations");
+    if (!res.ok) throw new Error("Failed to load invitations");
+    invitations = await res.json();
+    renderInvitations();
+  } catch (error) {
+    invitationGrid.innerHTML = `<div class="empty-state">Failed to load invitations.</div>`;
+    showToast("Failed to load invitations.");
+  }
+}
+
+function replaceInvitation(updatedInvitation) {
+  invitations = invitations.map(item =>
+    item.id === updatedInvitation.id ? updatedInvitation : item
+  );
+}
+
+async function updateInvitationStatus(item, action, button) {
+  const originalText = button ? button.textContent : "";
+  if (button) {
+    button.textContent = "Sending...";
+    button.disabled = true;
+  }
+
+  try {
+    const res = await fetch(`/api/invitations/${item.id}/${action}`, { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Request failed");
+
+    replaceInvitation(data);
+    renderInvitations();
+    showToast(action === "accept" ? "Invitation accepted!" : "Invitation declined.");
+    return true;
+  } catch (error) {
+    if (button) {
+      button.textContent = originalText;
+      button.disabled = false;
+    }
+    showToast("Failed to update invitation.");
+    return false;
+  }
+}
+
 /* Summary */
 function updateSummary(filtered) {
   totalInvitations.textContent = invitations.length;
@@ -155,7 +148,7 @@ function updateSummary(filtered) {
 
 /* Quick View Modal */
 function openModalForEvent(item) {
-  selectedModalEventId = item.id;
+  selectedModalInvitationId = item.id;
   modalTitle.textContent = item.name;
 
   modalBody.innerHTML = `
@@ -165,9 +158,11 @@ function openModalForEvent(item) {
     <div class="modal-meta-box"><strong>Participants:</strong> ${item.participants}</div>
   `;
 
-  modalJoinBtn.textContent = item.status === "joined" ? "Accepted" : "Accept";
+  modalJoinBtn.textContent = item.status === "joined"
+    ? "Accepted"
+    : item.status === "declined" ? "Declined" : "Accept";
   modalJoinBtn.disabled    = item.status === "joined" || item.status === "declined";
-  modalDetailLink.href = `/event-details?id=${item.id}`;
+  modalDetailLink.href = `/event-details/${item.event_id}`;
 
   detailModal.classList.remove("hidden");
 }
@@ -219,9 +214,10 @@ function renderInvitations() {
 
     const joined  = item.status === "joined";
     const declined = item.status === "declined";
+    const locked = joined || declined;
 
     card.innerHTML = `
-      <img src="${item.image}" alt="${item.name}" class="card-banner" />
+      <img src="${getImage(item.type)}" alt="${item.name}" class="card-banner" />
       <div class="card-meta">
         <span class="type-tag ${getGradient(item.type)}">${item.type}</span>
         <span class="status-tag ${getStatusClass(item.status)}">${getStatusLabel(item.status)}</span>
@@ -237,8 +233,8 @@ function renderInvitations() {
           <button class="btn-view-details" type="button">View Details</button>
         </div>
         <div class="footer-row-bottom">
-          <button class="btn-accept"  type="button" ${joined ? "disabled" : ""}>${joined ? "Accepted" : "Accept"}</button>
-          <button class="btn-decline" type="button" ${declined ? "disabled" : ""}>${declined ? "Declined" : "Decline"}</button>
+          <button class="btn-accept"  type="button" ${locked ? "disabled" : ""}>${joined ? "Accepted" : "Accept"}</button>
+          <button class="btn-decline" type="button" ${locked ? "disabled" : ""}>${declined ? "Declined" : "Decline"}</button>
         </div>
       </div>
     `;
@@ -251,22 +247,16 @@ function renderInvitations() {
     quickViewBtn.addEventListener("click", () => openModalForEvent(item));
 
     viewDetailBtn.addEventListener("click", () => {
-      goTo(`/event-details?id=${item.id}`);
+      goTo(`/event-details/${item.event_id}`);
     });
 
-    acceptBtn.addEventListener("click", () => {
-      item.status = "joined";
-      renderInvitations();
-      showToast("Invitation accepted!");
-    });
+    acceptBtn.addEventListener("click", () =>
+      updateInvitationStatus(item, "accept", acceptBtn)
+    );
 
-    declineBtn.addEventListener("click", () => {
-      if (item.status !== "declined") {
-        item.status = "declined";
-        renderInvitations();
-        showToast("Invitation declined.");
-      }
-    });
+    declineBtn.addEventListener("click", () =>
+      updateInvitationStatus(item, "decline", declineBtn)
+    );
 
     invitationGrid.appendChild(card);
   });
@@ -276,13 +266,11 @@ function renderInvitations() {
 }
 
 /* Modal listeners */
-modalJoinBtn.addEventListener("click", () => {
-  const selected = invitations.find(i => i.id === selectedModalEventId);
+modalJoinBtn.addEventListener("click", async () => {
+  const selected = invitations.find(i => i.id === selectedModalInvitationId);
   if (!selected || selected.status === "joined") return;
-  selected.status = "joined";
-  closeModal();
-  renderInvitations();
-  showToast("Invitation accepted!");
+  const updated = await updateInvitationStatus(selected, "accept", modalJoinBtn);
+  if (updated) closeModal();
 });
 
 closeModalBtn.addEventListener("click", closeModal);
@@ -305,5 +293,5 @@ dateFilter.addEventListener("change",  renderInvitations);
 sortFilter.addEventListener("change",  renderInvitations);
 
 /* Init */
-renderInvitations();
+loadInvitations();
 lucide.createIcons();
