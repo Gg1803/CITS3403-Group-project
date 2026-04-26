@@ -118,6 +118,105 @@ def invitations():
 def profile():
     return render_template("profile.html", user=current_user)
 
+def serialize_invitation(invitation):
+    event = invitation.event
+    status = "joined" if invitation.status in ("accepted", "joined") else invitation.status
+    participant_count = Participant.query.filter_by(event_id=event.id).count()
+    return {
+        "id": invitation.id,
+        "event_id": event.id,
+        "type": event.event_type,
+        "name": event.title,
+        "description": event.description or "",
+        "date": event.event_date.strftime("%Y-%m-%d"),
+        "location": event.location or "",
+        "participants": participant_count,
+        "status": status
+    }
+
+# AJAX - INVITATIONS
+@app.route("/api/invitations", methods=["GET"])
+@login_required
+def get_invitations():
+    invites = Invitation.query.filter_by(user_id=current_user.id).all()
+    return jsonify([serialize_invitation(invite) for invite in invites])
+
+@app.route("/api/invitations/<int:invitation_id>/accept", methods=["POST"])
+@login_required
+def accept_invitation(invitation_id):
+    invitation = Invitation.query.get_or_404(invitation_id)
+    if invitation.user_id != current_user.id:
+        return jsonify({"error": "Unauthorised"}), 403
+
+    invitation.status = "joined"
+    existing = Participant.query.filter_by(
+        user_id=current_user.id,
+        event_id=invitation.event_id
+    ).first()
+    if not existing:
+        db.session.add(Participant(user_id=current_user.id, event_id=invitation.event_id))
+
+    db.session.commit()
+    return jsonify(serialize_invitation(invitation))
+
+@app.route("/api/invitations/<int:invitation_id>/decline", methods=["POST"])
+@login_required
+def decline_invitation(invitation_id):
+    invitation = Invitation.query.get_or_404(invitation_id)
+    if invitation.user_id != current_user.id:
+        return jsonify({"error": "Unauthorised"}), 403
+
+    invitation.status = "declined"
+    db.session.commit()
+    return jsonify(serialize_invitation(invitation))
+
+@app.route("/event/<int:event_id>/invitations", methods=["POST"])
+@app.route("/event/<int:event_id>/participants", methods=["POST"])
+@login_required
+def send_invitation(event_id):
+    event = Event.query.get_or_404(event_id)
+    if event.user_id != current_user.id:
+        return jsonify({"error": "Only the event owner can invite participants"}), 403
+
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if user.id == current_user.id:
+        return jsonify({"error": "You cannot invite yourself"}), 400
+
+    existing_participant = Participant.query.filter_by(
+        user_id=user.id, event_id=event_id
+    ).first()
+    if existing_participant:
+        return jsonify({"error": "User is already a participant"}), 400
+
+    existing_invitation = Invitation.query.filter_by(
+        user_id=user.id, event_id=event_id
+    ).first()
+    if existing_invitation:
+        if existing_invitation.status == "pending":
+            return jsonify({"error": "Invitation already pending"}), 400
+        if existing_invitation.status in ("accepted", "joined"):
+            return jsonify({"error": "Invitation has already been accepted"}), 400
+        existing_invitation.status = "pending"
+        db.session.commit()
+        return jsonify({
+            "success": True,
+            "message": "Invitation sent",
+            "invitation": serialize_invitation(existing_invitation)
+        })
+
+    invitation = Invitation(user_id=user.id, event_id=event_id, status="pending")
+    db.session.add(invitation)
+    db.session.commit()
+    return jsonify({
+        "success": True,
+        "message": "Invitation sent",
+        "invitation": serialize_invitation(invitation)
+    })
+
 # AJAX - CREATE EVENT 
 @app.route("/create-event", methods=["POST"])
 @login_required
@@ -254,23 +353,6 @@ def get_participants(event_id):
     return jsonify([{
         "id": r.id, "username": r.user.username
     } for r in rows])
-
-@app.route("/event/<int:event_id>/participants", methods=["POST"])
-@login_required
-def add_participant(event_id):
-    data  = request.get_json()
-    email = data.get("email")
-    user  = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-    existing = Participant.query.filter_by(
-        user_id=user.id, event_id=event_id).first()
-    if existing:
-        return jsonify({"error": "Already a participant"}), 400
-    p = Participant(user_id=user.id, event_id=event_id)
-    db.session.add(p)
-    db.session.commit()
-    return jsonify({"id": p.id, "username": user.username})
 
 @app.route("/participants/<int:participant_id>", methods=["DELETE"])
 @login_required
