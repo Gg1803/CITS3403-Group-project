@@ -214,7 +214,7 @@ function renderParticipants(participants) {
     `${participants.length} participant${participants.length !== 1 ? "s" : ""}`;
 
   if (participants.length === 0) {
-    participantList.innerHTML = `<p class="empty-state">No participants invited yet.</p>`;
+    participantList.innerHTML = `<p class="empty-state">No participants have joined yet.</p>`;
     return;
   }
   participants.forEach(p => {
@@ -246,19 +246,26 @@ async function loadParticipants() {
 addParticipantBtn.addEventListener("click", async () => {
   const email = participantEmailInput.value.trim();
   if (!email) return;
-  const res  = await fetch(`/event/${EVENT_ID}/participants`, {
+
+  addParticipantBtn.disabled = true;
+  addParticipantBtn.textContent = "Sending...";
+
+  const res  = await fetch(`/event/${EVENT_ID}/invitations`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
     body:    JSON.stringify({ email })
   });
   const data = await res.json();
+  addParticipantBtn.disabled = false;
+  addParticipantBtn.textContent = "Invite";
+
   if (data.error) {
     alert(data.error);
     return;
   }
   participantEmailInput.value = "";
   closeModal(participantModal);
-  loadParticipants();
+  alert("Invitation sent. The user will join this event after accepting it.");
 });
 
 /* ── POLLS ────────────────────────────────────────────────────── */
