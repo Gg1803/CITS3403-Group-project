@@ -48,8 +48,21 @@ def signup():
     username = request.form["username"]
     email    = request.form["email"]
     password = request.form["password"]
+    
+    # Validation: email uniqueness
     if User.query.filter_by(email=email).first():
-        return redirect(url_for("login"))
+        return render_template("login_signup.html",
+                               error="An account with this email already exists.",
+                               prefill_email=email)
+    
+    # Validation: password strength
+    if len(password) < 8:
+        return render_template("login_signup.html",
+                               error="Password must be at least 8 characters long.")
+    if not any(c.isupper() for c in password):
+        return render_template("login_signup.html",
+                               error="Password must contain at least one uppercase letter.")
+    
     new_user = User(username=username, email=email,
                     password_hash=generate_password_hash(password))
     db.session.add(new_user)
@@ -490,18 +503,45 @@ def leave_event(event_id):
 @login_required
 def update_profile():
     data = request.get_json()
-    current_user.username = data.get("username", current_user.username)
-    current_user.email    = data.get("email", current_user.email)
+    new_email = data.get("email", "").strip().lower()
+    new_username = data.get("username", "").strip()
+    
+    # Validation: email uniqueness (exclude current user)
+    if new_email and new_email != current_user.email:
+        existing = User.query.filter_by(email=new_email).first()
+        if existing:
+            return jsonify({"error": "This email is already taken by another account."}), 400
+    
+    if new_username:
+        current_user.username = new_username
+    if new_email:
+        current_user.email = new_email
+    
     db.session.commit()
-    return jsonify({"success": True})
+    return jsonify({
+        "success": True,
+        "username": current_user.username,
+        "email": current_user.email
+    })
 
 @app.route("/profile/password", methods=["POST"])
 @login_required
 def update_password():
     data = request.get_json()
-    if not check_password_hash(current_user.password_hash, data.get("current")):
-        return jsonify({"error": "Current password is incorrect"}), 400
-    current_user.password_hash = generate_password_hash(data.get("new"))
+    current_password = data.get("current", "")
+    new_password = data.get("new", "")
+    
+    # Verify current password
+    if not check_password_hash(current_user.password_hash, current_password):
+        return jsonify({"error": "Current password is incorrect."}), 400
+    
+    # Validation: new password strength
+    if len(new_password) < 8:
+        return jsonify({"error": "New password must be at least 8 characters long."}), 400
+    if not any(c.isupper() for c in new_password):
+        return jsonify({"error": "New password must contain at least one uppercase letter."}), 400
+    
+    current_user.password_hash = generate_password_hash(new_password)
     db.session.commit()
     return jsonify({"success": True})
 

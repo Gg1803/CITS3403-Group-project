@@ -179,3 +179,33 @@ body {
 .profile-btn-password:hover {
   box-shadow: 0 6px 14px rgba(249, 115, 22, 0.28);
 }
+
+/* Message area */
+.profile-msg {
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 18px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.profile-msg-success {
+  background: #dcfce7;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.profile-msg-error {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+/* Input error state */
+.input-group input.input-error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}

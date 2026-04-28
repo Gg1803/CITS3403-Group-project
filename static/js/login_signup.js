@@ -36,3 +36,36 @@ window.addEventListener("load", () => {
     document.getElementById("loginPassword").focus();
   }
 });
+
+// Real-time password validation for signup
+const signupPasswordInput = document.getElementById("signupPassword");
+const signupPasswordHint  = document.getElementById("signupPasswordHint");
+
+if (signupPasswordInput && signupPasswordHint) {
+  signupPasswordInput.addEventListener("input", () => {
+    const val = signupPasswordInput.value;
+    let msg = "";
+    if (val.length > 0 && val.length < 8) {
+      msg = "Password must be at least 8 characters";
+    } else if (val.length >= 8 && !/[A-Z]/.test(val)) {
+      msg = "Password must contain at least one uppercase letter";
+    }
+    signupPasswordHint.textContent = msg;
+  });
+
+  // Also validate on form submit (extra safety)
+  const signupForm = document.getElementById("signupForm");
+  signupForm.addEventListener("submit", (e) => {
+    const pw = signupPasswordInput.value;
+    if (pw.length < 8) {
+      e.preventDefault();
+      signupPasswordHint.textContent = "Password must be at least 8 characters";
+      return;
+    }
+    if (!/[A-Z]/.test(pw)) {
+      e.preventDefault();
+      signupPasswordHint.textContent = "Password must contain at least one uppercase letter";
+      return;
+    }
+  });
+}
