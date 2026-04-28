@@ -113,9 +113,18 @@ pip install flask flask-sqlalchemy werkzeug flask-login
 ```
 Or (if requirements.txt is available):
 
+## Installation
+
+Install all required project dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
+# If python-dotenv is missing, install it separately:
+```bash
+pip install python-dotenv
+```
+
 ### 5. Seed the database
 
 ```bash
@@ -134,6 +143,24 @@ python app.py
 ```bash
 http://127.0.0.1:5000
 ```
+
+### 8. Running test cases 
+
+```bash
+PYTHONPATH=. python -m pytest tests
+```
+## running only uni test
+
+```bash
+PYTHONPATH=. python -m pytest tests/test_forms.py tests/test_routes.py tests/test_usermodels.py
+```
+
+## Run only Selenium tests
+
+```bash
+PYTHONPATH=. python -m pytest tests/test_selenium.py
+```
+
 
 ## Available Routes
 

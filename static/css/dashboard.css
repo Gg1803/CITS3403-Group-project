@@ -298,7 +298,7 @@ body {
   font-family: "Poppins", sans-serif;
 }
 
-.modal-content textarea { resize: vertical; }
+.modal-content textarea { min-height: 90px; resize: vertical; }
 .modal-content button { margin-top: 14px; width: 100%; }
 
 /* CHAR COUNT */

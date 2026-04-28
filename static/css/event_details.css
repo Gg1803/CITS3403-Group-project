@@ -544,3 +544,15 @@
   transition: background 0.2s;
 }
 .secondary-btn:hover { background: #ffe8cc; }
+
+/* Pending tag */
+.pending-tag {
+  display: inline-block;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+}
