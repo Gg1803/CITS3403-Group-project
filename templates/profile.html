@@ -38,6 +38,9 @@
     </div>
   </div>
 
+  <!-- MESSAGE AREA -->
+  <div id="profileMsg" class="profile-msg" style="display:none;"></div>
+
   <!-- CARDS ROW -->
   <div class="cards-row">
 
@@ -89,7 +92,8 @@
       </div>
       <div class="input-group">
         <label>New Password</label>
-        <input type="password" id="newPassword" placeholder="Enter new password" />
+        <input type="password" id="newPassword" placeholder="At least 8 chars, 1 uppercase" />
+        <span class="field-hint" id="newPasswordHint"></span>
       </div>
     </div>
 
@@ -101,7 +105,22 @@
 
 </div>
 
+<script>
+  // Initialize from backend (Jinja)
+  window.userData = {
+    username: "{{ user.username }}",
+    email: "{{ user.email }}"
+  };
+</script>
 <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
-<script>lucide.createIcons();</script>
+<script>
+  // Set initial display values
+  document.getElementById("displayName").innerText = window.userData.username;
+  document.getElementById("displayEmail").innerText = window.userData.email;
+  document.getElementById("nameInput").value = window.userData.username;
+  document.getElementById("emailInput").value = window.userData.email;
+  lucide.createIcons();
+</script>
+
 </body>
 </html>

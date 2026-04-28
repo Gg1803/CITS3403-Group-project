@@ -62,7 +62,8 @@
         </div>
         <div class="input-group">
           <label for="signupPassword">Password</label>
-          <input id="signupPassword" name="password" type="password" placeholder="Choose a password" required />
+          <input id="signupPassword" name="password" type="password" placeholder="At least 8 chars, 1 uppercase" required minlength="8" />
+          <span class="field-hint" id="signupPasswordHint"></span>
         </div>
         <button type="submit" class="main-button">Create Account</button>
       </form>
