@@ -457,7 +457,7 @@ def update_profile():
     if new_email and new_email != current_user.email:
         existing = User.query.filter_by(email=new_email).first()
         if existing:
-            return jsonify({"error": "This email is already taken by another account."}), 400
+            return jsonify({"error": "This email is already used by another account."}), 400
     
     if new_username:
         current_user.username = new_username

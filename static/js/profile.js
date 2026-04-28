@@ -71,11 +71,11 @@ async function changePassword() {
 
   // Frontend pre-check
   if (newPass.length < 8) {
-    showMessage("error", "New password must be at least 8 characters long.");
+    showMessage("error", "Password must be at least 8 characters and include one uppercase letter.");
     return;
   }
   if (!/[A-Z]/.test(newPass)) {
-    showMessage("error", "New password must contain at least one uppercase letter.");
+    showMessage("error", "Password must be at least 8 characters and include one uppercase letter.");
     return;
   }
 
