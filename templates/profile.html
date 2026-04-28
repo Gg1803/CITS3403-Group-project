@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Profile &amp; Settings</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo-group" onclick="goTo('/dashboard')">
+      <div class="logo-icon"><i data-lucide="calendar"></i></div>
+      <div class="logo-text">Event<span>ure</span></div>
+    </div>
+    <div class="nav-icons">
+      <i data-lucide="home"    onclick="goTo('/dashboard')"></i>
+      <i data-lucide="compass" onclick="goTo('/discover')"></i>
+      <i data-lucide="mail"    onclick="goTo('/invitations')"></i>
+      <i data-lucide="user"    onclick="goTo('/profile')"></i>
+      <i data-lucide="log-out" onclick="goTo('/login')"></i>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>My Profile</h1>
+      <p>Manage your account details</p>
+    </div>
+  </div>
+
+  <!-- CARDS ROW -->
+  <div class="cards-row">
+
+  <!-- PROFILE CARD -->
+  <div class="card profile-card profile-card-info">
+
+    <div class="profile-top">
+      <div class="profile-avatar">
+        <i data-lucide="user"></i>
+      </div>
+      <div>
+        <h2 id="displayName" style="color:#12796c;">You</h2>
+        <p id="displayEmail">you@example.com</p>
+      </div>
+    </div>
+
+    <div class="profile-fields">
+      <div class="input-group">
+        <label><i data-lucide="user"></i> Name</label>
+        <input type="text" id="nameInput" placeholder="Your name" />
+      </div>
+      <div class="input-group">
+        <label><i data-lucide="mail"></i> Email</label>
+        <input type="email" id="emailInput" placeholder="you@example.com" />
+      </div>
+    </div>
+
+    <button class="profile-btn profile-btn-save" onclick="saveProfile()">Save Changes</button>
+
+  </div>
+
+  <!-- PASSWORD CARD -->
+  <div class="card profile-card profile-card-password">
+
+    <div class="profile-top">
+      <div class="profile-avatar profile-avatar-password">
+        <i data-lucide="lock"></i>
+      </div>
+      <div>
+        <div class="card-section-title" style="color:#c45200; margin-bottom:3px;">Change Password</div>
+        <p style="color:#6b7280; font-size:0.9rem; margin:0;">Update your password</p>
+      </div>
+    </div>
+
+    <div class="profile-fields">
+      <div class="input-group">
+        <label>Current Password</label>
+        <input type="password" id="currentPassword" placeholder="Enter current password" />
+      </div>
+      <div class="input-group">
+        <label>New Password</label>
+        <input type="password" id="newPassword" placeholder="Enter new password" />
+      </div>
+    </div>
+
+    <button class="profile-btn profile-btn-password" onclick="changePassword()">Update Password</button>
+
+  </div>
+
+  </div><!-- /cards-row -->
+
+</div>
+
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Details</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/event_details.css') }}">
+</head>
+
+<body data-event-id="{{ event.id }}"></body>
+<div class="page-wrapper">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo-group" onclick="goTo('/dashboard')">
+      <div class="logo-icon"><i data-lucide="calendar"></i></div>
+      <div class="logo-text">Event<span>ure</span></div>
+    </div>
+    <div class="nav-icons">
+      <i data-lucide="home"    onclick="goTo('/dashboard')"></i>
+      <i data-lucide="compass" onclick="goTo('/discover')"></i>
+      <i data-lucide="mail"    onclick="goTo('/invitations')"></i>
+      <i data-lucide="user"    onclick="goTo('/profile')"></i>
+      <i data-lucide="log-out" onclick="goTo('/login')"></i>
+    </div>
+  </div>
+
+  <!-- HERO CARD -->
+  <div class="hero-card" id="heroCard">
+    <div class="hero-top" style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div>
+        <p class="hero-label">CREATED BY ME</p>
+        <h1 class="hero-title" id="displayEventTitle">{{ event.title }}</h1>
+      </div>
+    </div>
+
+    <div class="hero-meta">
+      <div class="meta-pill">
+        <i data-lucide="calendar"></i>
+        <span id="displayEventDate">{{ event.event_date.strftime('%d %b %Y') if event.event_date else '-' }}</span>
+      </div>
+      <div class="meta-pill">
+        <i data-lucide="map-pin"></i>
+        <span id="displayEventLocation">{{ event.location or '-' }}</span>
+      </div>
+      <div class="meta-pill">
+        <i data-lucide="users"></i>
+        <span id="displayParticipantCount">0 participants</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT STRIP — type options must match exact strings stored in DB -->
+  <div class="edit-strip">
+    <div class="edit-grid">
+      <div class="field-group">
+        <label for="eventTitle">Event Title</label>
+        <input id="eventTitle" type="text" value="{{ event.title }}" />
+      </div>
+      <div class="field-group">
+        <label for="eventType">Event Type</label>
+        <select id="eventType">
+          <option value="Beach day"      {% if event.event_type == 'Beach day' %}selected{% endif %}>Beach day</option>
+          <option value="House party"    {% if event.event_type == 'House party' %}selected{% endif %}>House party</option>
+          <option value="Game night"     {% if event.event_type == 'Game night' %}selected{% endif %}>Game night</option>
+          <option value="Hiking/Outdoor" {% if event.event_type == 'Hiking/Outdoor' %}selected{% endif %}>Hiking/Outdoor</option>
+          <option value="Study session"  {% if event.event_type == 'Study session' %}selected{% endif %}>Study session</option>
+          <option value="Sport events"   {% if event.event_type == 'Sport events' %}selected{% endif %}>Sport events</option>
+          <option value="Food/dining"    {% if event.event_type == 'Food/dining' %}selected{% endif %}>Food/dining</option>
+          <option value="Movie night"    {% if event.event_type == 'Movie night' %}selected{% endif %}>Movie night</option>
+          <option value="Concert/music"  {% if event.event_type == 'Concert/music' %}selected{% endif %}>Concert/music</option>
+          <option value="Custom"         {% if event.event_type not in ['Beach day','House party','Game night','Hiking/Outdoor','Study session','Sport events','Food/dining','Movie night','Concert/music'] %}selected{% endif %}>Custom</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="eventDate">Date</label>
+        <input id="eventDate" type="date" value="{{ event.event_date.strftime('%Y-%m-%d') if event.event_date else '' }}" />
+      </div>
+      <div class="field-group">
+        <label for="eventLocation">Location</label>
+        <input id="eventLocation" type="text" value="{{ event.location or '' }}" />
+      </div>
+      <div class="field-group">
+        <label for="eventDescription">Description</label>
+        <input id="eventDescription" type="text" value="{{ event.description or '' }}" />
+      </div>
+      <div class="field-group">
+        <label for="eventVisibility">Visibility</label>
+        <select id="eventVisibility">
+          <option value="private" {% if not event.is_public %}selected{% endif %}>Private</option>
+          <option value="public" {% if event.is_public %}selected{% endif %}>Public</option>
+        </select>
+      </div>
+      <button class="save-btn" onclick="saveEvent()">Save</button>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="dashboard-grid">
+
+    <!-- LEFT: Task Board + Timeline + Participants stacked -->
+    <div class="left-col">
+
+      <section class="panel panel-task">
+        <div class="panel-header">
+          <div class="panel-header-text">
+            <h2>Task Board</h2>
+            <p>Organise everything for your event</p>
+          </div>
+          <button class="action-btn btn-task" id="openTaskModal" type="button">+ Add Task</button>
+        </div>
+        <div class="mini-progress-row">
+          <span id="taskProgressCount">0/0</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="taskProgressFill"></div>
+        </div>
+        <div id="taskList" class="list-area">
+          <p class="empty-state">No tasks added yet.</p>
+        </div>
+      </section>
+
+      <section class="panel panel-timeline">
+        <div class="panel-header">
+          <div class="panel-header-text">
+            <h2>Timeline</h2>
+            <p>Plan the flow of your event</p>
+          </div>
+          <button class="action-btn btn-timeline" id="openTimelineModal" type="button">+ Add</button>
+        </div>
+        <div id="timelineList" class="list-area">
+          <p class="empty-state">No timeline steps yet.</p>
+        </div>
+      </section>
+
+      <section class="panel panel-participants">
+        <div class="panel-header">
+          <div class="panel-header-text">
+            <h2>Participants</h2>
+            <p>Invite and manage attendees</p>
+          </div>
+          <button class="action-btn btn-participants" id="openParticipantModal" type="button">Invite</button>
+        </div>
+        <div id="participantList" class="list-area">
+          <p class="empty-state">No participants invited yet.</p>
+        </div>
+      </section>
+
+    </div><!-- /left-col -->
+
+    <!-- RIGHT: Poll (tall, standalone) -->
+    <section class="panel panel-poll">
+      <div class="panel-header">
+        <div class="panel-header-text">
+          <h2>Poll</h2>
+          <p>Collect preferences</p>
+        </div>
+        <button class="action-btn btn-poll" id="openPollModal" type="button">Create</button>
+      </div>
+
+      <div class="poll-nav">
+        <button id="prevPollBtn" type="button" aria-label="Previous poll">←</button>
+        <button id="nextPollBtn" type="button" aria-label="Next poll">→</button>
+      </div>
+
+      <div id="pollContainer" class="poll-content">
+        <p class="empty-state">No polls created yet.</p>
+      </div>
+
+      <div class="poll-footer" id="pollFooter">0/0</div>
+    </section>
+
+  </div><!-- /dashboard-grid -->
+</div><!-- /page-wrapper -->
+
+<!-- TASK MODAL -->
+<div class="modal-overlay hidden" id="taskModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Task</h3>
+      <button class="close-btn" data-close="taskModal" type="button">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <label for="taskName">Task name</label>
+        <input id="taskName" type="text" placeholder="e.g. Buy sunscreen" />
+      </div>
+      <div class="field-group">
+        <label for="taskAssignedTo">Assigned to</label>
+        <input id="taskAssignedTo" type="text" placeholder="e.g. Jamie" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn btn-task" id="addTaskBtn" type="button">Add Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- TIMELINE MODAL -->
+<div class="modal-overlay hidden" id="timelineModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Timeline Step</h3>
+      <button class="close-btn" data-close="timelineModal" type="button">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <label for="timelineStep">Step description</label>
+        <input id="timelineStep" type="text" placeholder="e.g. Arrive at beach at 10am" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn btn-timeline" id="addTimelineBtn" type="button">Add Step</button>
+    </div>
+  </div>
+</div>
+
+<!-- PARTICIPANT MODAL -->
+<div class="modal-overlay hidden" id="participantModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Invite Participant</h3>
+      <button class="close-btn" data-close="participantModal" type="button">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <label for="participantName">Email address</label>
+        <input id="participantName" type="email" placeholder="Enter user's email" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn btn-participants" id="addParticipantBtn" type="button">Invite</button>
+    </div>
+  </div>
+</div>
+
+<!-- POLL MODAL ─-->
+<div class="modal-overlay hidden" id="pollModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Create Poll</h3>
+      <button class="close-btn" data-close="pollModal" type="button">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <label for="pollQuestion">Question</label>
+        <input id="pollQuestion" type="text" placeholder="e.g. What time should we meet?" />
+      </div>
+      <div id="pollOptionsWrapper">
+        <div class="field-group poll-option-field">
+          <label>Option 1</label>
+          <input type="text" class="poll-option-input" placeholder="Option 1" />
+        </div>
+        <div class="field-group poll-option-field">
+          <label>Option 2</label>
+          <input type="text" class="poll-option-input" placeholder="Option 2" />
+        </div>
+      </div>
+      <button class="secondary-btn" id="addPollOptionField" type="button">+ Add Option</button>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn btn-poll" id="createPollBtn" type="button">Create Poll</button>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/event_details.js') }}"></script>
+</body>
+</html>

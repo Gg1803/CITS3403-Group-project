@@ -1,0 +1,13 @@
+# Python
+venv/
+__pycache__/
+
+# Database
+instance/database.db
+
+# Environment variables
+.env
+
+# Mac
+.DS_Storeinstance/database.db
+.DS_Store

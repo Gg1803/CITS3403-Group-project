@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invitations</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/invitation_page.css') }}">
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo-group" onclick="goTo('/dashboard')">
+      <div class="logo-icon"><i data-lucide="calendar"></i></div>
+      <div class="logo-text">Event<span>ure</span></div>
+    </div>
+    <div class="nav-icons">
+      <i data-lucide="home"    onclick="goTo('/dashboard')"></i>
+      <i data-lucide="compass" onclick="goTo('/discover')"></i>
+      <i data-lucide="mail"    onclick="goTo('/invitations')"></i>
+      <i data-lucide="user"    onclick="goTo('/profile')"></i>
+      <i data-lucide="log-out" onclick="goTo('/login')"></i>
+    </div>
+  </div>
+
+  <!-- PAGE HEADING -->
+  <div class="page-heading">
+    <h1>My Invitations</h1>
+    <p id="invitationSubtitle">You have 0 pending invitations</p>
+  </div>
+
+  <!-- SUMMARY BLOCKS -->
+  <div class="summary-grid">
+    <div class="summary-card summary-total">
+      <span class="summary-label">TOTAL</span>
+      <span class="summary-value" id="totalInvitations">0</span>
+    </div>
+    <div class="summary-card summary-joined">
+      <span class="summary-label">JOINED</span>
+      <span class="summary-value" id="joinedCount">0</span>
+    </div>
+    <div class="summary-card summary-pending">
+      <span class="summary-label">PENDING</span>
+      <span class="summary-value" id="pendingCount">0</span>
+    </div>
+    <div class="summary-card summary-declined">
+      <span class="summary-label">DECLINED</span>
+      <span class="summary-value" id="declinedCount">0</span>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="filter-bar-title">SEARCH & FILTER</div>
+    <div class="filter-row">
+      <div class="field-group search-group">
+        <label for="searchInput">Search event</label>
+        <input id="searchInput" type="text" placeholder="Search by name, location…" />
+      </div>
+      <div class="field-group">
+        <label for="typeFilter">Type</label>
+        <select id="typeFilter">
+          <option value="all">All Types</option>
+          <option value="Beach day">Beach day</option>
+          <option value="House party">House party</option>
+          <option value="Game night">Game night</option>
+          <option value="Hiking/Outdoor">Hiking/Outdoor</option>
+          <option value="Study session">Study session</option>
+          <option value="Sport events">Sport events</option>
+          <option value="Food/dining">Food/dining</option>
+          <option value="Movie night">Movie night</option>
+          <option value="Concert/music">Concert/music</option>
+          <option value="Custom">Custom</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="dateFilter">Date from</label>
+        <input id="dateFilter" type="date" />
+      </div>
+      <div class="field-group">
+        <label for="sortFilter">Sort by</label>
+        <select id="sortFilter">
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="name-asc">Name A–Z</option>
+          <option value="name-desc">Name Z–A</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS + RESULTS -->
+  <div class="filter-footer">
+    <div class="tab-row">
+      <button class="tab-btn active" data-tab="all"      type="button">All</button>
+      <button class="tab-btn"        data-tab="pending"  type="button">Pending</button>
+      <button class="tab-btn"        data-tab="joined"   type="button">Joined</button>
+      <button class="tab-btn"        data-tab="declined" type="button">Declined</button>
+    </div>
+    <div class="results-pill"><span id="resultsCount">0</span> results</div>
+  </div>
+
+  <!-- INVITATION GRID -->
+  <div class="invitation-grid" id="invitationGrid"></div>
+
+</div><!-- /page-wrapper -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- QUICK VIEW MODAL -->
+<div class="modal-overlay hidden" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Event Detail</h3>
+      <button class="close-btn" id="closeModalBtn" type="button">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <a id="modalDetailLink" class="modal-secondary" href="/event-details">View Details</a>
+      <button class="modal-accept" id="modalJoinBtn" type="button">Accept</button>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/invitation_page.js') }}"></script>
+</body>
+</html>
