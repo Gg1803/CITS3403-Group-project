@@ -5,12 +5,15 @@ from datetime import datetime
 from models import db, User, Event, Participant, Invitation, Task, Timeline, Poll, PollOption, Vote
 from dotenv import load_dotenv
 import os
-
-load_dotenv()  # loads variables from .env
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///database.db")
+
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "DATABASE_URL",
+    "sqlite:///database.db"
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
@@ -89,7 +92,10 @@ def discover():
 def event_details(event_id):
     event = Event.query.get_or_404(event_id)
     participants = Participant.query.filter_by(event_id=event_id).all()
-    invitations = Invitation.query.filter_by(event_id=event_id).all()
+    pending_invitations = Invitation.query.filter_by(
+        event_id=event_id,
+        status="pending"
+    ).all()
     tasks = Task.query.filter_by(event_id=event_id).all()
     timelines = Timeline.query.filter_by(event_id=event_id).order_by(Timeline.order.asc()).all()
     polls = Poll.query.filter_by(event_id=event_id).all()
@@ -98,7 +104,7 @@ def event_details(event_id):
         "event_details.html",
         event=event,
         participants=participants,
-        invitations=invitations,
+        pending_invitations=pending_invitations,
         tasks=tasks,
         timelines=timelines,
         polls=polls
@@ -107,7 +113,10 @@ def event_details(event_id):
 @app.route("/invitations")
 @login_required
 def invitations():
-    invites = Invitation.query.filter_by(user_id=current_user.id).all()
+    invites = Invitation.query.filter_by(
+        user_id=current_user.id,
+        status="pending"
+    ).all()
     return render_template("invitation_page.html", invitations=invites)
 
 @app.route("/profile")
@@ -252,22 +261,126 @@ def get_participants(event_id):
         "id": r.id, "username": r.user.username
     } for r in rows])
 
-@app.route("/event/<int:event_id>/participants", methods=["POST"])
+# AJAX - INVITE USER
+@app.route("/event/<int:event_id>/invite", methods=["POST"])
 @login_required
-def add_participant(event_id):
+def invite_user(event_id):
     data  = request.get_json()
     email = data.get("email")
-    user  = User.query.filter_by(email=email).first()
+
+    user = User.query.filter_by(email=email).first()
     if not user:
         return jsonify({"error": "User not found"}), 404
-    existing = Participant.query.filter_by(
-        user_id=user.id, event_id=event_id).first()
-    if existing:
+
+    # check existing invitation
+    existing_invite = Invitation.query.filter_by(
+        user_id=user.id, event_id=event_id
+    ).first()
+
+    if existing_invite:
+        return jsonify({"error": "Already invited"}), 400
+
+    # check already participant
+    existing_participant = Participant.query.filter_by(
+        user_id=user.id, event_id=event_id
+    ).first()
+
+    if existing_participant:
         return jsonify({"error": "Already a participant"}), 400
-    p = Participant(user_id=user.id, event_id=event_id)
-    db.session.add(p)
+
+    invitation = Invitation(
+        user_id=user.id,
+        event_id=event_id,
+        status="pending"
+    )
+
+    db.session.add(invitation)
     db.session.commit()
-    return jsonify({"id": p.id, "username": user.username})
+
+    return jsonify({
+        "id": invitation.id,
+        "username": user.username,
+        "status": invitation.status
+    })
+
+# AJAX - GET PENDING INVITATIONS FOR EVENT
+@app.route("/event/<int:event_id>/pending-invitations", methods=["GET"])
+@login_required
+def get_pending_invitations(event_id):
+    invitations = Invitation.query.filter_by(
+        event_id=event_id,
+        status="pending"
+    ).all()
+    return jsonify([{
+        "id": inv.id,
+        "username": inv.user.username,
+        "status": inv.status
+    } for inv in invitations])
+
+# AJAX - GET INVITATIONS DATA (for the invitation page)
+@app.route("/invitations/data")
+@login_required
+def get_invitations_data():
+    invites = Invitation.query.filter_by(
+        user_id=current_user.id
+    ).all()
+    
+    result = []
+    for inv in invites:
+        event = inv.event
+        result.append({
+            "id": inv.id,
+            "event_id": event.id,
+            "event_title": event.title,
+            "event_type": event.event_type,
+            "event_date": event.event_date.strftime("%Y-%m-%d") if event.event_date else None,
+            "location": event.location,
+            "description": event.description,
+            "status": inv.status  # "pending", "accepted", "declined"
+        })
+    
+    return jsonify(result)
+
+@app.route("/invitations/<int:invitation_id>/accept", methods=["POST"])
+@login_required
+def accept_invitation(invitation_id):
+    invitation = Invitation.query.get_or_404(invitation_id)
+
+    if invitation.user_id != current_user.id:
+        return jsonify({"error": "Unauthorised"}), 403
+
+    # update status
+    invitation.status = "accepted"
+
+    # create participant
+    existing = Participant.query.filter_by(
+        user_id=current_user.id,
+        event_id=invitation.event_id
+    ).first()
+
+    if not existing:
+        participant = Participant(
+            user_id=current_user.id,
+            event_id=invitation.event_id
+        )
+        db.session.add(participant)
+
+    db.session.commit()
+
+    return jsonify({"success": True})
+
+@app.route("/invitations/<int:invitation_id>/decline", methods=["POST"])
+@login_required
+def decline_invitation(invitation_id):
+    invitation = Invitation.query.get_or_404(invitation_id)
+
+    if invitation.user_id != current_user.id:
+        return jsonify({"error": "Unauthorised"}), 403
+
+    invitation.status = "declined"
+    db.session.commit()
+
+    return jsonify({"success": True})
 
 @app.route("/participants/<int:participant_id>", methods=["DELETE"])
 @login_required

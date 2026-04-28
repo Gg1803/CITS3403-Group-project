@@ -208,15 +208,18 @@ addTimelineBtn.addEventListener("click", async () => {
 });
 
 /* ── PARTICIPANTS ─────────────────────────────────────────────── */
-function renderParticipants(participants) {
+function renderParticipants(participants, pendingInvitations) {
   participantList.innerHTML = "";
-  displayParticipantCount.textContent =
-    `${participants.length} participant${participants.length !== 1 ? "s" : ""}`;
 
-  if (participants.length === 0) {
+  const totalCount = participants.length + pendingInvitations.length;
+  displayParticipantCount.textContent =
+    `${totalCount} participant${totalCount !== 1 ? "s" : ""}`;
+
+  if (totalCount === 0) {
     participantList.innerHTML = `<p class="empty-state">No participants invited yet.</p>`;
     return;
   }
+
   participants.forEach(p => {
     const item = document.createElement("div");
     item.className = "item-card";
@@ -235,18 +238,43 @@ function renderParticipants(participants) {
     });
     participantList.appendChild(item);
   });
+
+  pendingInvitations.forEach(inv => {
+    const item = document.createElement("div");
+    item.className = "item-card";
+    item.innerHTML = `
+      <div class="item-main">
+        <div class="item-title">${inv.username}</div>
+        <div class="item-subtitle">
+          <span class="pending-tag">Pending</span>
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="remove-btn invitation-cancel" type="button">Cancel</button>
+      </div>
+      `;
+    item.querySelector(".invitation-cancel").addEventListener("click", async () => {
+      const res = await fetch(`/invitations/${inv.id}/decline`, { method: "POST" });
+      if (res.ok) loadParticipants();
+    });
+    participantList.appendChild(item);
+  });
 }
 
 async function loadParticipants() {
   const res          = await fetch(`/event/${EVENT_ID}/participants`);
   const participants = await res.json();
-  renderParticipants(participants);
+
+  const invRes = await fetch(`/event/${EVENT_ID}/pending-invitations`);
+  const pendingInvitations = await invRes.json();
+
+  renderParticipants(participants, pendingInvitations);
 }
 
 addParticipantBtn.addEventListener("click", async () => {
   const email = participantEmailInput.value.trim();
   if (!email) return;
-  const res  = await fetch(`/event/${EVENT_ID}/participants`, {
+  const res  = await fetch(`/event/${EVENT_ID}/invite`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
     body:    JSON.stringify({ email })
@@ -419,6 +447,7 @@ async function saveEvent() {
 
 /* Init - load everything from DB on page load */
 document.addEventListener("DOMContentLoaded", () => {
+  updateTheme();
   updateTopInfo();
   loadTasks();
   loadTimeline();

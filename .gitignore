@@ -1,13 +1,37 @@
 # Python
-venv/
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Testing
+.pytest_cache/
 
 # Database
-instance/database.db
+instance/
+*.db
 
-# Environment variables
+# Flask Environment
 .env
 
-# Mac
-.DS_Storeinstance/database.db
+# macOS Files
 .DS_Store
+.localized
+__MACOSX/
+
+# IDE Settings
+.vscode/
+.idea/
+
+# Build Files
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
