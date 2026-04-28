@@ -26,10 +26,8 @@ const modalDetailLink = document.getElementById("modalDetailLink");
 const tabButtons = document.querySelectorAll(".tab-btn");
 
 let activeTab = "all";
-let selectedModalEventId = null;
-
-// Real invitations from backend
 let invitations = [];
+let selectedModalInvitationId = null;
 
 /* Gradient map (mirrors dashboard exactly) */
 const gradientMap = {
@@ -45,23 +43,21 @@ const gradientMap = {
   "Custom":         "gradient-dark"
 };
 
-/* Image map – same as discover page */
-const imageMap = {
-  "Beach day":      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
-  "House party":    "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=800&q=80",
-  "Game night":     "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=800&q=80",
+const fallbackImages = {
+  "Beach day": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+  "House party": "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=800&q=80",
+  "Game night": "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=800&q=80",
   "Hiking/Outdoor": "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=800&q=80",
-  "Study session":  "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80",
-  "Sport events":   "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80",
-  "Food/dining":    "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=800&q=80",
-  "Movie night":    "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80",
-  "Concert/music":  "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80",
-  "Custom":         "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=800&q=80"
+  "Study session": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80",
+  "Sport events": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80",
+  "Food/dining": "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=800&q=80",
+  "Movie night": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80",
+  "Concert/music": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80",
+  "Custom": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=800&q=80"
 };
 
 /* Helpers */
 function formatDate(dateString) {
-  if (!dateString) return "-";
   const date = new Date(dateString);
   return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
@@ -78,7 +74,7 @@ function getGradient(type) {
 }
 
 function getStatusClass(status) {
-  if (status === "accepted") return "status-joined";
+  if (status === "joined")   return "status-joined";
   if (status === "declined") return "status-declined";
   return "status-pending";
 }
@@ -87,10 +83,59 @@ function getStatusLabel(status) {
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
+function getImage(type) {
+  return fallbackImages[type] || fallbackImages["Custom"];
+}
+
+async function loadInvitations() {
+  invitationGrid.innerHTML = `<div class="empty-state">Loading invitations...</div>`;
+  try {
+    const res = await fetch("/api/invitations");
+    if (!res.ok) throw new Error("Failed to load invitations");
+    invitations = await res.json();
+    renderInvitations();
+  } catch (error) {
+    invitationGrid.innerHTML = `<div class="empty-state">Failed to load invitations.</div>`;
+    showToast("Failed to load invitations.");
+  }
+}
+
+function replaceInvitation(updatedInvitation) {
+  invitations = invitations.map(item =>
+    item.id === updatedInvitation.id ? updatedInvitation : item
+  );
+}
+
+async function updateInvitationStatus(item, action, button) {
+  const originalText = button ? button.textContent : "";
+  if (button) {
+    button.textContent = "Sending...";
+    button.disabled = true;
+  }
+
+  try {
+    const res = await fetch(`/api/invitations/${item.id}/${action}`, { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Request failed");
+
+    replaceInvitation(data);
+    renderInvitations();
+    showToast(action === "accept" ? "Invitation accepted!" : "Invitation declined.");
+    return true;
+  } catch (error) {
+    if (button) {
+      button.textContent = originalText;
+      button.disabled = false;
+    }
+    showToast("Failed to update invitation.");
+    return false;
+  }
+}
+
 /* Summary */
 function updateSummary(filtered) {
   totalInvitations.textContent = invitations.length;
-  joinedCount.textContent      = invitations.filter(i => i.status === "accepted").length;
+  joinedCount.textContent      = invitations.filter(i => i.status === "joined").length;
   pendingCount.textContent     = invitations.filter(i => i.status === "pending").length;
   declinedCount.textContent    = invitations.filter(i => i.status === "declined").length;
   resultsCount.textContent     = filtered.length;
@@ -103,18 +148,21 @@ function updateSummary(filtered) {
 
 /* Quick View Modal */
 function openModalForEvent(item) {
-  selectedModalEventId = item.id;
+  selectedModalInvitationId = item.id;
   modalTitle.textContent = item.name;
 
   modalBody.innerHTML = `
     <div class="modal-meta-box"><strong>Date:</strong> ${formatDate(item.date)}</div>
     <div class="modal-meta-box"><strong>Location:</strong> ${item.location}</div>
     <div class="modal-meta-box"><strong>Description:</strong> ${item.description}</div>
+    <div class="modal-meta-box"><strong>Participants:</strong> ${item.participants}</div>
   `;
 
-  modalJoinBtn.textContent = item.status === "accepted" ? "Accepted" : "Accept";
-  modalJoinBtn.disabled    = item.status === "accepted";  // only disabled if already accepted
-  modalDetailLink.href = `/event-details/${item.eventId}`;
+  modalJoinBtn.textContent = item.status === "joined"
+    ? "Accepted"
+    : item.status === "declined" ? "Declined" : "Accept";
+  modalJoinBtn.disabled    = item.status === "joined" || item.status === "declined";
+  modalDetailLink.href = `/event-details/${item.event_id}`;
 
   detailModal.classList.remove("hidden");
 }
@@ -134,10 +182,7 @@ function applyFilters() {
       item.location.toLowerCase().includes(search) ||
       item.description.toLowerCase().includes(search);
     const matchType = selType === "all" || item.type === selType;
-    const matchTab =
-      activeTab === "all" ||
-      (activeTab === "joined" && item.status === "accepted") || /*matches backend*/
-      item.status === activeTab;
+    const matchTab  = activeTab === "all" || item.status === activeTab;
     const matchDate = !selDate || item.date >= selDate;
     return matchSearch && matchType && matchTab && matchDate;
   });
@@ -167,11 +212,12 @@ function renderInvitations() {
     const card = document.createElement("article");
     card.className = "invitation-card";
 
-    const isAccepted = item.status === "accepted";
-    const isDeclined = item.status === "declined";
+    const joined  = item.status === "joined";
+    const declined = item.status === "declined";
+    const locked = joined || declined;
 
     card.innerHTML = `
-      <img src="${item.image}" alt="${item.name}" class="card-banner" />
+      <img src="${getImage(item.type)}" alt="${item.name}" class="card-banner" />
       <div class="card-meta">
         <span class="type-tag ${getGradient(item.type)}">${item.type}</span>
         <span class="status-tag ${getStatusClass(item.status)}">${getStatusLabel(item.status)}</span>
@@ -187,8 +233,8 @@ function renderInvitations() {
           <button class="btn-view-details" type="button">View Details</button>
         </div>
         <div class="footer-row-bottom">
-          <button class="btn-accept"  type="button" ${isAccepted ? "disabled" : ""}>${isAccepted ? "Accepted" : "Accept"}</button>
-          <button class="btn-decline" type="button" ${isAccepted || isDeclined ? "disabled" : ""}>${isDeclined ? "Declined" : "Decline"}</button>
+          <button class="btn-accept"  type="button" ${locked ? "disabled" : ""}>${joined ? "Accepted" : "Accept"}</button>
+          <button class="btn-decline" type="button" ${locked ? "disabled" : ""}>${declined ? "Declined" : "Decline"}</button>
         </div>
       </div>
     `;
@@ -201,34 +247,16 @@ function renderInvitations() {
     quickViewBtn.addEventListener("click", () => openModalForEvent(item));
 
     viewDetailBtn.addEventListener("click", () => {
-      goTo(`/event-details/${item.eventId}`);
+      goTo(`/event-details/${item.event_id}`);
     });
 
-    acceptBtn.addEventListener("click", async () => {
-      if (item.status === "accepted") return;
-      const res = await fetch(`/invitations/${item.id}/accept`, { method: "POST" });
-      const data = await res.json();
-      if (data.error) {
-        showToast(data.error);
-        return;
-      }
-      item.status = "accepted";
-      renderInvitations();
-      showToast("Invitation accepted!");
-    });
+    acceptBtn.addEventListener("click", () =>
+      updateInvitationStatus(item, "accept", acceptBtn)
+    );
 
-    declineBtn.addEventListener("click", async () => {
-      if (item.status === "declined") return;
-      const res = await fetch(`/invitations/${item.id}/decline`, { method: "POST" });
-      const data = await res.json();
-      if (data.error) {
-        showToast(data.error);
-        return;
-      }
-      item.status = "declined";
-      renderInvitations();
-      showToast("Invitation declined.");
-    });
+    declineBtn.addEventListener("click", () =>
+      updateInvitationStatus(item, "decline", declineBtn)
+    );
 
     invitationGrid.appendChild(card);
   });
@@ -239,19 +267,10 @@ function renderInvitations() {
 
 /* Modal listeners */
 modalJoinBtn.addEventListener("click", async () => {
-  const selected = invitations.find(i => i.id === selectedModalEventId);
-  if (!selected || selected.status === "accepted") return;  // only block if already accepted
-
-  const res = await fetch(`/invitations/${selected.id}/accept`, { method: "POST" });
-  const data = await res.json();
-  if (data.error) {
-    showToast(data.error);
-    return;
-  }
-  selected.status = "accepted";
-  closeModal();
-  renderInvitations();
-  showToast("Invitation accepted!");
+  const selected = invitations.find(i => i.id === selectedModalInvitationId);
+  if (!selected || selected.status === "joined") return;
+  const updated = await updateInvitationStatus(selected, "accept", modalJoinBtn);
+  if (updated) closeModal();
 });
 
 closeModalBtn.addEventListener("click", closeModal);
@@ -273,32 +292,6 @@ typeFilter.addEventListener("change",  renderInvitations);
 dateFilter.addEventListener("change",  renderInvitations);
 sortFilter.addEventListener("change",  renderInvitations);
 
-/* Load invitations from backend and map to the format the UI expects */
-async function loadInvitations() {
-  try {
-    const res = await fetch("/invitations/data");
-    if (!res.ok) throw new Error("Failed to load invitations");
-    const data = await res.json();
-
-    // Map backend data to the format the invitation page expects
-    invitations = data.map(inv => ({
-      id:          inv.id,                              // invitation id (for accept/decline API)
-      eventId:     inv.event_id,                        // event id (for navigation)
-      type:        inv.event_type || "Custom",
-      name:        inv.event_title,
-      description: inv.description || "No description provided.",
-      date:        inv.event_date,
-      location:    inv.location || "N/A",
-      status:      inv.status,                          // "pending", "accepted", "declined"
-      image:       imageMap[inv.event_type] || imageMap["Custom"]  // match discover page images
-    }));
-  } catch (err) {
-    console.error(err);
-    invitations = [];
-  }
-  renderInvitations();
-  lucide.createIcons();
-}
-
 /* Init */
 loadInvitations();
+lucide.createIcons();
