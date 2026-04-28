@@ -100,3 +100,20 @@ async function changePassword() {
     showMessage("error", "Network error. Please try again.");
   }
 }
+
+// Real-time password validation hint
+const newPasswordInput = document.getElementById("newPassword");
+const newPasswordHint  = document.getElementById("newPasswordHint");
+
+if (newPasswordInput && newPasswordHint) {
+  newPasswordInput.addEventListener("input", () => {
+    const val = newPasswordInput.value;
+    let msg = "";
+    if (val.length > 0 && val.length < 8) {
+      msg = "Password must be at least 8 characters";
+    } else if (val.length >= 8 && !/[A-Z]/.test(val)) {
+      msg = "Password must contain at least one uppercase letter";
+    }
+    newPasswordHint.textContent = msg;
+  });
+}
