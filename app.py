@@ -272,28 +272,30 @@ def invite_user(event_id):
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    # check existing invitation
     existing_invite = Invitation.query.filter_by(
         user_id=user.id, event_id=event_id
     ).first()
 
     if existing_invite:
-        return jsonify({"error": "Already invited"}), 400
+        if existing_invite.status == "pending":
+            return jsonify({"error": "Already invited"}), 400
+        # declined or previously accepted but left — reset to pending
+        existing_invite.status = "pending"
+        db.session.commit()
+        return jsonify({
+            "id": existing_invite.id,
+            "username": user.username,
+            "status": "pending"
+        })
 
-    # check already participant
+    # check already an active participant
     existing_participant = Participant.query.filter_by(
         user_id=user.id, event_id=event_id
     ).first()
-
     if existing_participant:
         return jsonify({"error": "Already a participant"}), 400
 
-    invitation = Invitation(
-        user_id=user.id,
-        event_id=event_id,
-        status="pending"
-    )
-
+    invitation = Invitation(user_id=user.id, event_id=event_id, status="pending")
     db.session.add(invitation)
     db.session.commit()
 
@@ -382,6 +384,21 @@ def decline_invitation(invitation_id):
 
     return jsonify({"success": True})
 
+@app.route("/invitations/<int:invitation_id>/cancel", methods=["DELETE"])
+@login_required
+def cancel_invitation(invitation_id):
+    invitation = Invitation.query.get_or_404(invitation_id)
+
+    # allow ONLY event creator to cancel
+    event = Event.query.get(invitation.event_id)
+    if event.user_id != current_user.id:
+        return jsonify({"error": "Unauthorised"}), 403
+
+    db.session.delete(invitation)
+    db.session.commit()
+
+    return jsonify({"success": True})
+
 @app.route("/participants/<int:participant_id>", methods=["DELETE"])
 @login_required
 def remove_participant(participant_id):
@@ -450,13 +467,21 @@ def join_event(event_id):
     participant_count = Participant.query.filter_by(event_id=event_id).count()
     return jsonify({"success": True, "participants": participant_count})
 
-# AJAX - LEAVE EVENT (discover page)
+# AJAX - LEAVE EVENT
 @app.route("/event/<int:event_id>/leave", methods=["DELETE"])
 @login_required
 def leave_event(event_id):
     p = Participant.query.filter_by(
         user_id=current_user.id, event_id=event_id).first_or_404()
     db.session.delete(p)
+
+    # Reset invitation back to pending so user can re-accept
+    invitation = Invitation.query.filter_by(
+        user_id=current_user.id, event_id=event_id
+    ).first()
+    if invitation:
+        invitation.status = "pending"
+
     db.session.commit()
     return jsonify({"success": True})
 

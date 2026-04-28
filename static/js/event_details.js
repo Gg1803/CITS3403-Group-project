@@ -254,7 +254,7 @@ function renderParticipants(participants, pendingInvitations) {
       </div>
       `;
     item.querySelector(".invitation-cancel").addEventListener("click", async () => {
-      const res = await fetch(`/invitations/${inv.id}/decline`, { method: "POST" });
+      const res = await fetch(`/invitations/${inv.id}/cancel`, { method: "DELETE" });
       if (res.ok) loadParticipants();
     });
     participantList.appendChild(item);

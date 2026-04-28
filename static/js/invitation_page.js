@@ -113,7 +113,7 @@ function openModalForEvent(item) {
   `;
 
   modalJoinBtn.textContent = item.status === "accepted" ? "Accepted" : "Accept";
-  modalJoinBtn.disabled    = item.status === "accepted" || item.status === "declined";
+  modalJoinBtn.disabled    = item.status === "accepted";  // only disabled if already accepted
   modalDetailLink.href = `/event-details/${item.eventId}`;
 
   detailModal.classList.remove("hidden");
@@ -134,7 +134,10 @@ function applyFilters() {
       item.location.toLowerCase().includes(search) ||
       item.description.toLowerCase().includes(search);
     const matchType = selType === "all" || item.type === selType;
-    const matchTab  = activeTab === "all" || item.status === activeTab;
+    const matchTab =
+      activeTab === "all" ||
+      (activeTab === "joined" && item.status === "accepted") || /*matches backend*/
+      item.status === activeTab;
     const matchDate = !selDate || item.date >= selDate;
     return matchSearch && matchType && matchTab && matchDate;
   });
@@ -184,7 +187,7 @@ function renderInvitations() {
           <button class="btn-view-details" type="button">View Details</button>
         </div>
         <div class="footer-row-bottom">
-          <button class="btn-accept"  type="button" ${isAccepted || isDeclined ? "disabled" : ""}>${isAccepted ? "Accepted" : "Accept"}</button>
+          <button class="btn-accept"  type="button" ${isAccepted ? "disabled" : ""}>${isAccepted ? "Accepted" : "Accept"}</button>
           <button class="btn-decline" type="button" ${isAccepted || isDeclined ? "disabled" : ""}>${isDeclined ? "Declined" : "Decline"}</button>
         </div>
       </div>
@@ -202,6 +205,7 @@ function renderInvitations() {
     });
 
     acceptBtn.addEventListener("click", async () => {
+      if (item.status === "accepted") return;
       const res = await fetch(`/invitations/${item.id}/accept`, { method: "POST" });
       const data = await res.json();
       if (data.error) {
@@ -236,7 +240,7 @@ function renderInvitations() {
 /* Modal listeners */
 modalJoinBtn.addEventListener("click", async () => {
   const selected = invitations.find(i => i.id === selectedModalEventId);
-  if (!selected || selected.status === "accepted" || selected.status === "declined") return;
+  if (!selected || selected.status === "accepted") return;  // only block if already accepted
 
   const res = await fetch(`/invitations/${selected.id}/accept`, { method: "POST" });
   const data = await res.json();
