@@ -113,14 +113,20 @@ pip install flask flask-sqlalchemy werkzeug flask-login
 ```
 Or (if requirements.txt is available):
 
-## Installation
+### Installation
 
 Install all required project dependencies:
+
+###Add Mailtrap install (must)
+
+```bash
+pip install mailtrap
+```
 
 ```bash
 pip install -r requirements.txt
 ```
-# If python-dotenv is missing, install it separately:
+### If python-dotenv is missing, install it separately:
 ```bash
 pip install python-dotenv
 ```
@@ -149,13 +155,14 @@ http://127.0.0.1:5000
 ```bash
 PYTHONPATH=. python -m pytest tests
 ```
-## running only uni test
+
+### running only uni test
 
 ```bash
 PYTHONPATH=. python -m pytest tests/test_forms.py tests/test_routes.py tests/test_usermodels.py
 ```
 
-## Run only Selenium tests
+### Run only Selenium tests
 
 ```bash
 PYTHONPATH=. python -m pytest tests/test_selenium.py
@@ -200,4 +207,4 @@ Timeline
 Poll
 PollOption
 Vote
-- Added password change email notification using Mailtrap API
+Added password change email notification using Mailtrap API
