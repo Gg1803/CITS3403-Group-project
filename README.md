@@ -200,3 +200,4 @@ Timeline
 Poll
 PollOption
 Vote
+- Added password change email notification using Mailtrap API
