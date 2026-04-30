@@ -6,10 +6,11 @@ function goTo(page) {
 function showMessage(type, text) {
   const box = document.getElementById("profileMsg");
   if (!box) return;
+
   box.textContent = text;
   box.className = `profile-msg profile-msg-${type}`;
   box.style.display = "block";
-  // Auto-hide success after 3s
+
   if (type === "success") {
     setTimeout(() => { box.style.display = "none"; }, 3000);
   }
@@ -20,10 +21,12 @@ function clearMessage() {
   if (box) box.style.display = "none";
 }
 
-// SAVE PROFILE (username + email)
+// =======================
+// SAVE PROFILE
+// =======================
 async function saveProfile() {
   clearMessage();
-  
+
   const name = document.getElementById("nameInput").value.trim();
   const email = document.getElementById("emailInput").value.trim();
 
@@ -38,44 +41,46 @@ async function saveProfile() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username: name, email: email })
     });
+
     const data = await res.json();
 
-    if (data.error) {
-      showMessage("error", data.error);
+    if (!res.ok || data.error) {
+      showMessage("error", data.error || "Failed to update profile.");
       return;
     }
 
-    // Update display
     document.getElementById("displayName").innerText = data.username;
     document.getElementById("displayEmail").innerText = data.email;
-    document.getElementById("nameInput").value = data.username;
-    document.getElementById("emailInput").value = data.email;
 
     showMessage("success", "Profile updated successfully!");
+
   } catch (err) {
     showMessage("error", "Network error. Please try again.");
   }
 }
 
+// =======================
 // CHANGE PASSWORD
+// =======================
 async function changePassword() {
   clearMessage();
 
-  const current = document.getElementById("currentPassword").value;
-  const newPass = document.getElementById("newPassword").value;
+  const current = document.getElementById("currentPassword").value.trim();
+  const newPass = document.getElementById("newPassword").value.trim();
 
   if (!current || !newPass) {
     showMessage("error", "Please fill in both password fields.");
     return;
   }
 
-  // Frontend pre-check
+  // Frontend validation
   if (newPass.length < 8) {
-    showMessage("error", "Password must be at least 8 characters and include one uppercase letter.");
+    showMessage("error", "Password must be at least 8 characters.");
     return;
   }
+
   if (!/[A-Z]/.test(newPass)) {
-    showMessage("error", "Password must be at least 8 characters and include one uppercase letter.");
+    showMessage("error", "Password must contain at least one uppercase letter.");
     return;
   }
 
@@ -83,37 +88,50 @@ async function changePassword() {
     const res = await fetch("/profile/password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ current: current, new: newPass })
+      body: JSON.stringify({
+        current: current,
+        new: newPass
+      })
     });
+
     const data = await res.json();
 
-    if (data.error) {
-      showMessage("error", data.error);
+    // ❗ IMPORTANT FIX
+    if (!res.ok || data.error) {
+      showMessage("error", data.error || "Password update failed.");
       return;
     }
 
-    // Clear password fields
+    // Clear fields ONLY on success
     document.getElementById("currentPassword").value = "";
     document.getElementById("newPassword").value = "";
-    showMessage("success", "Password updated successfully!");
+
+    // ✅ Use backend message (includes email status)
+    showMessage("success", data.message || "Password updated successfully!");
+
   } catch (err) {
     showMessage("error", "Network error. Please try again.");
   }
 }
 
-// Real-time password validation hint
+// =======================
+// LIVE PASSWORD HINT
+// =======================
 const newPasswordInput = document.getElementById("newPassword");
 const newPasswordHint  = document.getElementById("newPasswordHint");
 
 if (newPasswordInput && newPasswordHint) {
   newPasswordInput.addEventListener("input", () => {
     const val = newPasswordInput.value;
-    let msg = "";
+
     if (val.length > 0 && val.length < 8) {
-      msg = "Password must be at least 8 characters";
-    } else if (val.length >= 8 && !/[A-Z]/.test(val)) {
-      msg = "Password must contain at least one uppercase letter";
+      newPasswordHint.textContent = "At least 8 characters required";
+    } 
+    else if (val.length >= 8 && !/[A-Z]/.test(val)) {
+      newPasswordHint.textContent = "Must include one uppercase letter";
+    } 
+    else {
+      newPasswordHint.textContent = "";
     }
-    newPasswordHint.textContent = msg;
   });
 }
