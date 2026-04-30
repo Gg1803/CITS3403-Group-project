@@ -16,19 +16,17 @@
 <body>
   <div class="container">
 
-    <!-- Logo -->
     <div class="logo-wrapper">
       <div class="logo-icon">
         <i data-lucide="calendar"></i>
       </div>
       <div class="logo">Event<span>ure</span></div>
     </div>
+
     <div class="subtitle">Let's plan events together!</div>
 
-    <!-- Card -->
     <div class="card">
 
-      <!-- Toggle -->
       <div class="toggle">
         <button id="loginBtn" class="active" type="button">Log In</button>
         <button id="signupBtn" type="button">Sign Up</button>
@@ -36,43 +34,78 @@
 
       <!-- LOGIN FORM -->
       <form id="loginForm" method="POST" action="/login">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
         <div class="input-group">
           <label for="loginEmail">Email</label>
-          <input id="loginEmail" name="email" type="email"
-                 placeholder="you@example.com"
-                 value="{{ prefill_email }}" required />
+          <input
+            id="loginEmail"
+            name="email"
+            type="email"
+            placeholder="you@example.com"
+            value="{{ prefill_email }}"
+            required
+          />
         </div>
+
         <div class="input-group">
           <label for="loginPassword">Password</label>
-          <input id="loginPassword" name="password" type="password"
-                 placeholder="Enter your password" required />
+          <input
+            id="loginPassword"
+            name="password"
+            type="password"
+            placeholder="Enter your password"
+            required
+          />
         </div>
+
         <button type="submit" class="main-button">Log In</button>
       </form>
-      
-      <!-- SIGNUP FORM (hidden by default) -->
+
+      <!-- SIGNUP FORM -->
       <form id="signupForm" method="POST" action="/signup" class="hidden">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
         <div class="input-group">
           <label for="signupUsername">Username</label>
-          <input id="signupUsername" name="username" type="text" placeholder="Your username" required />
+          <input
+            id="signupUsername"
+            name="username"
+            type="text"
+            placeholder="Your username"
+            required
+          />
         </div>
+
         <div class="input-group">
           <label for="signupEmail">Email</label>
-          <input id="signupEmail" name="email" type="email" placeholder="you@example.com" required />
+          <input
+            id="signupEmail"
+            name="email"
+            type="email"
+            placeholder="you@example.com"
+            required
+          />
         </div>
+
         <div class="input-group">
           <label for="signupPassword">Password</label>
-          <input id="signupPassword" name="password" type="password" placeholder="At least 8 characters, 1 uppercase letter" required minlength="8" />
+          <input
+            id="signupPassword"
+            name="password"
+            type="password"
+            placeholder="At least 8 characters, 1 uppercase letter"
+            required
+            minlength="8"
+          />
           <span class="field-hint" id="signupPasswordHint"></span>
         </div>
+
         <button type="submit" class="main-button">Create Account</button>
       </form>
 
-      
-
     </div>
 
-    <!-- Error message -->
     {% if error %}
     <div class="login-error">{{ error }}</div>
     {% endif %}
