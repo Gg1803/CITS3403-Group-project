@@ -80,7 +80,7 @@ function updateTopInfo() {
   lucide.createIcons();
 }
 
-/* ── Modal helpers ────────────────────────────────────────────── */
+/* Modal helpers */
 function openModal(modal)  { modal.classList.remove("hidden"); }
 function closeModal(modal) { modal.classList.add("hidden"); }
 
@@ -101,7 +101,7 @@ document.querySelectorAll(".modal-overlay").forEach(overlay => {
   });
 });
 
-/* ── TASKS ────────────────────────────────────────────────────── */
+/* TASKS */
 function updateTaskProgress(tasks) {
   const total     = tasks.length;
   const completed = tasks.filter(t => t.completed).length;
@@ -163,7 +163,7 @@ addTaskBtn.addEventListener("click", async () => {
   loadTasks();
 });
 
-/* ── TIMELINE ─────────────────────────────────────────────────── */
+/* TIMELINE */
 function renderTimeline(steps) {
   timelineList.innerHTML = "";
   if (steps.length === 0) {
@@ -207,7 +207,7 @@ addTimelineBtn.addEventListener("click", async () => {
   loadTimeline();
 });
 
-/* ── PARTICIPANTS ─────────────────────────────────────────────── */
+/* PARTICIPANTS */
 function renderParticipants(participants) {
   participantList.innerHTML = "";
   displayParticipantCount.textContent =
@@ -268,7 +268,64 @@ addParticipantBtn.addEventListener("click", async () => {
   alert("Invitation sent. The user will join this event after accepting it.");
 });
 
-/* ── POLLS ────────────────────────────────────────────────────── */
+/* Voters popup in poll */
+function showVotersPopup(anchor, voters) {
+  // Remove any existing popup
+  const existing = document.getElementById("votersPopup");
+  if (existing) existing.remove();
+
+  const popup = document.createElement("div");
+  popup.id = "votersPopup";
+  popup.style.cssText = `
+    position: absolute;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 9999;
+    min-width: 160px;
+    font-family: "Poppins", sans-serif;
+    font-size: 0.85rem;
+  `;
+
+  if (voters.length === 0) {
+    popup.innerHTML = `<p style="color:#9ca3af; margin:0;">No votes yet</p>`;
+  } else {
+    popup.innerHTML = `
+      <p style="font-weight:700; color:#1f2933; margin:0 0 8px;">Voted by</p>
+      ${voters.map(v => `
+        <div style="display:flex; align-items:center; gap:6px; padding:4px 0; color:#374151;">
+          <span style="
+            width:24px; height:24px; border-radius:50%;
+            background:linear-gradient(135deg,#4f8cff,#6b9dfc);
+            display:inline-flex; align-items:center; justify-content:center;
+            color:#fff; font-size:0.7rem; font-weight:700; flex-shrink:0;">
+            ${v.username.charAt(0).toUpperCase()}
+          </span>
+          ${v.username}
+        </div>`).join("")}
+    `;
+  }
+
+  // Position near the anchor
+  document.body.appendChild(popup);
+  const rect = anchor.getBoundingClientRect();
+  popup.style.top  = `${rect.bottom + window.scrollY + 6}px`;
+  popup.style.left = `${rect.left  + window.scrollX}px`;
+
+  // Close on outside click
+  setTimeout(() => {
+    document.addEventListener("click", function handler(e) {
+      if (!popup.contains(e.target) && e.target !== anchor) {
+        popup.remove();
+        document.removeEventListener("click", handler);
+      }
+    });
+  }, 0);
+}
+
+/* POLLS */
 function renderPoll() {
   pollContainer.innerHTML = "";
   if (polls.length === 0) {
@@ -302,7 +359,12 @@ function renderPoll() {
     el.innerHTML = `
       <div class="poll-option-top">
         <span class="poll-option-name">${option.text}</span>
-        <span class="poll-option-votes">${option.votes} votes · ${actualPct}%</span>
+        <span class="poll-option-votes voters-trigger"
+              data-option-id="${option.id}"
+              style="cursor:pointer; text-decoration:underline dotted;"
+              title="Click to see who voted">
+          ${option.votes} votes · ${actualPct}%
+        </span>
       </div>
       <div class="poll-bar">
         <div class="poll-fill color-vote" style="width:${visiblePct}%"></div>
@@ -324,6 +386,16 @@ function renderPoll() {
       const data     = await res.json();
       if (data.error) { alert(data.error); return; }
       await loadPolls();
+    });
+  });
+
+  // Voters popup
+  optList.querySelectorAll(".voters-trigger").forEach(span => {
+    span.addEventListener("click", async () => {
+      const optionId = span.dataset.optionId;
+      const res      = await fetch(`/poll-option/${optionId}/voters`);
+      const data     = await res.json();
+      showVotersPopup(span, data);
     });
   });
 

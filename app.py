@@ -420,6 +420,13 @@ def vote(poll_id, option_id):
     option = PollOption.query.get(option_id)
     return jsonify({"option_id": option_id, "votes": len(option.votes)})
 
+# AJAX - GET VOTERS FOR POLL OPTIONS
+@app.route("/poll-option/<int:option_id>/voters", methods=["GET"])
+@login_required
+def get_voters(option_id):
+    votes = Vote.query.filter_by(option_id=option_id).all()
+    return jsonify([{"username": v.user.username} for v in votes])
+
 # AJAX - JOIN EVENT (discover page)
 @app.route("/event/<int:event_id>/join", methods=["POST"])
 @login_required
