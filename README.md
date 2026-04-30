@@ -149,8 +149,20 @@ python app.py
 ```bash
 http://127.0.0.1:5000
 ```
+### 8. Install Selenium
 
-### 8. Running test cases 
+```bash
+pip install selenium
+```
+or
+
+If using Mac:
+
+```bash
+brew install chromedriver
+```
+
+### 9. Running test cases 
 
 ```bash
 PYTHONPATH=. python -m pytest tests
