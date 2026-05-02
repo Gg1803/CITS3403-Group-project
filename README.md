@@ -131,25 +131,39 @@ pip install -r requirements.txt
 pip install python-dotenv
 ```
 
-### 5. Seed the database
+### 5. Apply database migrations
+
+```bash
+flask --app app db upgrade
+```
+
+If the `migrations/` folder does not exist in a fresh clone, initialise it first:
+
+```bash
+flask --app app db init
+flask --app app db migrate -m "initial migration"
+flask --app app db upgrade
+```
+
+### 6. Seed the database
 
 ```bash
 python seed.py
 ```
-This will create the database and populate it with sample data. You'll see "Database seeded successfully" when done. Every time after that just run the application (Step 5)
+This will create the database and populate it with sample data. You'll see "Database seeded successfully" when done. Every time after that just run the application (Step 7).
 
-### 6. Run the application
+### 7. Run the application
 
 ```bash
 python app.py
 ```
 
-### 7. Open in browser
+### 8. Open in browser
 
 ```bash
 http://127.0.0.1:5000
 ```
-### 8. Install Selenium
+### 9. Install Selenium
 
 ```bash
 pip install selenium
@@ -162,7 +176,7 @@ If using Mac:
 brew install chromedriver
 ```
 
-### 9. Running test cases 
+### 10. Running test cases 
 
 ```bash
 PYTHONPATH=. python -m pytest tests

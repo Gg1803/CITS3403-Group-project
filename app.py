@@ -1,8 +1,23 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from models import db, User, Event, Participant, Invitation, Task, Timeline, Poll, PollOption, Vote
+from models import (
+    db,
+    ROLE_CO_HOST,
+    ROLE_HOST,
+    ROLE_PARTICIPANT,
+    User,
+    Event,
+    Participant,
+    Invitation,
+    Task,
+    Timeline,
+    Poll,
+    PollOption,
+    Vote
+)
 from dotenv import load_dotenv
 import os
 import smtplib
@@ -35,6 +50,7 @@ app.config["MAIL_DEFAULT_SENDER"] = os.environ.get(
 )
 
 db.init_app(app)
+migrate = Migrate(app, db)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -44,6 +60,77 @@ login_manager.login_view = "login"
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+def permission_denied(message="Permission denied"):
+    return jsonify({"error": message}), 403
+
+
+def get_event_role(event, user_id=None):
+    user_id = user_id or current_user.id
+
+    if event.user_id == user_id:
+        return ROLE_HOST
+
+    participant = Participant.query.filter_by(
+        event_id=event.id,
+        user_id=user_id
+    ).first()
+
+    return participant.role if participant else None
+
+
+def get_event_participant(event, user_id=None):
+    user_id = user_id or current_user.id
+
+    return Participant.query.filter_by(
+        event_id=event.id,
+        user_id=user_id
+    ).first()
+
+
+def can_edit_event(event, user_id=None):
+    role = get_event_role(event, user_id)
+
+    if not role:
+        return False
+
+    if not event.is_public:
+        return True
+
+    return role in (ROLE_HOST, ROLE_CO_HOST)
+
+
+def can_manage_participants(event, user_id=None):
+    return get_event_role(event, user_id) in (ROLE_HOST, ROLE_CO_HOST)
+
+
+def can_assign_roles(event, user_id=None):
+    return get_event_role(event, user_id) == ROLE_HOST
+
+
+def can_vote_in_event(event, user_id=None):
+    return get_event_role(event, user_id) is not None
+
+
+def event_permissions(event):
+    role = get_event_role(event)
+
+    return {
+        "current_role": role,
+        "can_edit": can_edit_event(event),
+        "can_manage_participants": can_manage_participants(event),
+        "can_assign_roles": can_assign_roles(event),
+        "can_vote": can_vote_in_event(event)
+    }
+
+
+def serialize_participant(participant):
+    return {
+        "id": participant.id,
+        "username": participant.user.username,
+        "role": participant.role
+    }
 
 
 # AUTH
@@ -100,7 +187,7 @@ def signup():
     new_user = User(
         username=username,
         email=email,
-        password_hash=generate_password_hash(password)
+        password_hash=generate_password_hash(password, method="pbkdf2:sha256")
     )
 
     db.session.add(new_user)
@@ -170,7 +257,8 @@ def event_details(event_id):
         invitations=invitations,
         tasks=tasks,
         timelines=timelines,
-        polls=polls
+        polls=polls,
+        **event_permissions(event)
     )
 
 
@@ -230,7 +318,11 @@ def accept_invitation(invitation_id):
 
     if not existing:
         db.session.add(
-            Participant(user_id=current_user.id, event_id=invitation.event_id)
+            Participant(
+                user_id=current_user.id,
+                event_id=invitation.event_id,
+                role=ROLE_PARTICIPANT
+            )
         )
 
     db.session.commit()
@@ -257,8 +349,8 @@ def decline_invitation(invitation_id):
 def send_invitation(event_id):
     event = Event.query.get_or_404(event_id)
 
-    if event.user_id != current_user.id:
-        return jsonify({"error": "Only the event owner can invite participants"}), 403
+    if not can_manage_participants(event):
+        return permission_denied("Only hosts or co-hosts can invite participants")
 
     data = request.get_json(silent=True) or {}
     email = data.get("email", "").strip().lower()
@@ -333,6 +425,14 @@ def create_event():
     )
 
     db.session.add(new_event)
+    db.session.flush()
+    db.session.add(
+        Participant(
+            user_id=current_user.id,
+            event_id=new_event.id,
+            role=ROLE_HOST
+        )
+    )
     db.session.commit()
 
     # Return the new event data as JSON so JS can add the card without reload
@@ -344,7 +444,7 @@ def create_event():
         "location": new_event.location,
         "description": new_event.description,
         "is_public": new_event.is_public,
-        "participants": 0
+        "participants": 1
     })
 
 
@@ -369,8 +469,8 @@ def delete_event(event_id):
 def update_event(event_id):
     event = Event.query.get_or_404(event_id)
 
-    if event.user_id != current_user.id:
-        return jsonify({"error": "Unauthorised"}), 403
+    if not can_edit_event(event):
+        return permission_denied()
 
     data = request.get_json(silent=True) or {}
 
@@ -406,6 +506,11 @@ def get_tasks(event_id):
 @app.route("/event/<int:event_id>/tasks", methods=["POST"])
 @login_required
 def add_task(event_id):
+    event = Event.query.get_or_404(event_id)
+
+    if not can_edit_event(event):
+        return permission_denied()
+
     data = request.get_json(silent=True) or {}
 
     task = Task(
@@ -430,6 +535,10 @@ def add_task(event_id):
 @login_required
 def toggle_task(task_id):
     task = Task.query.get_or_404(task_id)
+
+    if not can_edit_event(task.event):
+        return permission_denied()
+
     task.completed = not task.completed
 
     db.session.commit()
@@ -444,6 +553,9 @@ def toggle_task(task_id):
 @login_required
 def delete_task(task_id):
     task = Task.query.get_or_404(task_id)
+
+    if not can_edit_event(task.event):
+        return permission_denied()
 
     db.session.delete(task)
     db.session.commit()
@@ -467,6 +579,11 @@ def get_timeline(event_id):
 @app.route("/event/<int:event_id>/timeline", methods=["POST"])
 @login_required
 def add_timeline(event_id):
+    event = Event.query.get_or_404(event_id)
+
+    if not can_edit_event(event):
+        return permission_denied()
+
     data = request.get_json(silent=True) or {}
     count = Timeline.query.filter_by(event_id=event_id).count()
 
@@ -491,6 +608,9 @@ def add_timeline(event_id):
 def delete_timeline(step_id):
     step = Timeline.query.get_or_404(step_id)
 
+    if not can_edit_event(step.event):
+        return permission_denied()
+
     db.session.delete(step)
     db.session.commit()
 
@@ -503,21 +623,54 @@ def delete_timeline(step_id):
 def get_participants(event_id):
     rows = Participant.query.filter_by(event_id=event_id).all()
 
-    return jsonify([{
-        "id": row.id,
-        "username": row.user.username
-    } for row in rows])
+    return jsonify([serialize_participant(row) for row in rows])
 
 
 @app.route("/participants/<int:participant_id>", methods=["DELETE"])
 @login_required
 def remove_participant(participant_id):
     participant = Participant.query.get_or_404(participant_id)
+    event = participant.event
+
+    if not can_manage_participants(event):
+        return permission_denied()
+
+    if participant.role == ROLE_HOST or participant.user_id == event.user_id:
+        return jsonify({"error": "The host cannot be removed"}), 400
+
+    current_role = get_event_role(event)
+
+    if current_role == ROLE_CO_HOST and participant.role == ROLE_CO_HOST:
+        return permission_denied("Only the host can remove a co-host")
 
     db.session.delete(participant)
     db.session.commit()
 
     return jsonify({"success": True})
+
+
+@app.route("/participants/<int:participant_id>/role", methods=["PATCH"])
+@login_required
+def update_participant_role(participant_id):
+    participant = Participant.query.get_or_404(participant_id)
+    event = participant.event
+
+    if not can_assign_roles(event):
+        return permission_denied("Only the host can manage roles")
+
+    if participant.role == ROLE_HOST or participant.user_id == event.user_id:
+        return jsonify({"error": "The host role cannot be changed"}), 400
+
+    data = request.get_json(silent=True) or {}
+    new_role = data.get("role")
+
+    if new_role not in (ROLE_CO_HOST, ROLE_PARTICIPANT):
+        return jsonify({"error": "Invalid role"}), 400
+
+    participant.role = new_role
+    db.session.commit()
+
+    return jsonify(serialize_participant(participant))
 
 
 # AJAX - POLLS
@@ -540,6 +693,11 @@ def get_polls(event_id):
 @app.route("/event/<int:event_id>/polls", methods=["POST"])
 @login_required
 def create_poll(event_id):
+    event = Event.query.get_or_404(event_id)
+
+    if not can_edit_event(event):
+        return permission_denied()
+
     data = request.get_json(silent=True) or {}
 
     poll = Poll(question=data["question"], event_id=event_id)
@@ -565,6 +723,14 @@ def create_poll(event_id):
 @app.route("/polls/<int:poll_id>/vote/<int:option_id>", methods=["POST"])
 @login_required
 def vote(poll_id, option_id):
+    option = PollOption.query.get_or_404(option_id)
+
+    if option.poll_id != poll_id:
+        return jsonify({"error": "Invalid poll option"}), 400
+
+    if not can_vote_in_event(option.poll.event):
+        return permission_denied("Only participants can vote")
+
     existing = Vote.query.filter_by(
         user_id=current_user.id,
         option_id=option_id
@@ -577,8 +743,6 @@ def vote(poll_id, option_id):
 
     db.session.add(vote_record)
     db.session.commit()
-
-    option = PollOption.query.get(option_id)
 
     return jsonify({
         "option_id": option_id,
@@ -603,6 +767,9 @@ def get_voters(option_id):
 def join_event(event_id):
     event = Event.query.get_or_404(event_id)
 
+    if not event.is_public:
+        return permission_denied("Private events require an invitation")
+
     existing = Participant.query.filter_by(
         user_id=current_user.id,
         event_id=event_id
@@ -611,7 +778,11 @@ def join_event(event_id):
     if existing:
         return jsonify({"error": "Already joined"}), 400
 
-    participant = Participant(user_id=current_user.id, event_id=event_id)
+    participant = Participant(
+        user_id=current_user.id,
+        event_id=event_id,
+        role=ROLE_PARTICIPANT
+    )
 
     db.session.add(participant)
     db.session.commit()
@@ -632,6 +803,9 @@ def leave_event(event_id):
         user_id=current_user.id,
         event_id=event_id
     ).first_or_404()
+
+    if participant.role == ROLE_HOST or participant.event.user_id == current_user.id:
+        return jsonify({"error": "The host cannot leave their own event"}), 400
 
     db.session.delete(participant)
     db.session.commit()
@@ -732,7 +906,10 @@ def update_password():
             "error": "New password must contain at least one uppercase letter."
         }), 400
 
-    current_user.password_hash = generate_password_hash(new_password)
+    current_user.password_hash = generate_password_hash(
+        new_password,
+        method="pbkdf2:sha256"
+    )
     db.session.commit()
 
     email_sent = send_password_change_email(current_user)
