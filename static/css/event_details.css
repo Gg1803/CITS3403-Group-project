@@ -556,3 +556,28 @@
   border-radius: 999px;
   letter-spacing: 0.03em;
 }
+
+.role-tag {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.role-host {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.role-co_host {
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+
+.role-participant {
+  background: #e5e7eb;
+  color: #374151;
+}

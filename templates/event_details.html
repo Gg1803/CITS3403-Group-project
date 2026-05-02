@@ -15,7 +15,14 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/event_details.css') }}">
 </head>
 
-<body data-event-id="{{ event.id }}">
+<body
+  data-event-id="{{ event.id }}"
+  data-current-role="{{ current_role or '' }}"
+  data-can-edit="{{ 'true' if can_edit else 'false' }}"
+  data-can-manage-participants="{{ 'true' if can_manage_participants else 'false' }}"
+  data-can-assign-roles="{{ 'true' if can_assign_roles else 'false' }}"
+  data-can-vote="{{ 'true' if can_vote else 'false' }}"
+>
 <div class="page-wrapper">
 
   <!-- TOPBAR -->
@@ -37,7 +44,9 @@
   <div class="hero-card" id="heroCard">
     <div class="hero-top" style="display:flex; justify-content:space-between; align-items:flex-start;">
       <div>
-        <p class="hero-label">CREATED BY ME</p>
+        <p class="hero-label">
+          {{ (current_role or 'viewer')|replace('_', '-')|upper }}
+        </p>
         <h1 class="hero-title" id="displayEventTitle">{{ event.title }}</h1>
       </div>
     </div>

@@ -4,6 +4,11 @@ from flask_login import UserMixin
 
 db = SQLAlchemy()
 
+ROLE_HOST = "host"
+ROLE_CO_HOST = "co_host"
+ROLE_PARTICIPANT = "participant"
+
+
 class User(UserMixin, db.Model):
     __tablename__ = "user"
     id            = db.Column(db.Integer, primary_key=True)
@@ -42,7 +47,12 @@ class Participant(db.Model):
     id        = db.Column(db.Integer, primary_key=True)
     user_id   = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     event_id  = db.Column(db.Integer, db.ForeignKey("event.id"), nullable=False)
+    role      = db.Column(db.String(20), nullable=False, default=ROLE_PARTICIPANT)
     joined_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "event_id", name="uq_participant_user_event"),
+    )
 
 class Invitation(db.Model):
     __tablename__ = "invitation"

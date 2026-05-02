@@ -4,7 +4,21 @@ load_dotenv()
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 from app import app
-from models import db, User, Event, Participant, Invitation, Task, Timeline, Poll, PollOption, Vote
+from models import (
+    db,
+    ROLE_CO_HOST,
+    ROLE_HOST,
+    ROLE_PARTICIPANT,
+    User,
+    Event,
+    Participant,
+    Invitation,
+    Task,
+    Timeline,
+    Poll,
+    PollOption,
+    Vote
+)
 
 
 def future_date(days, hours=0):
@@ -15,12 +29,12 @@ with app.app_context():
     db.drop_all()
     db.create_all()
 
-    user1 = User(username="gargi",  email="gargi@example.com",  password_hash=generate_password_hash("password123"))
-    user2 = User(username="alex",   email="alex@example.com",   password_hash=generate_password_hash("password123"))
-    user3 = User(username="priya",  email="priya@example.com",  password_hash=generate_password_hash("password123"))
-    user4 = User(username="john",   email="john@example.com",   password_hash=generate_password_hash("password123"))
-    user5 = User(username="sarah",  email="sarah@example.com",  password_hash=generate_password_hash("password123"))
-    user6 = User(username="mike",   email="mike@example.com",   password_hash=generate_password_hash("password123"))
+    user1 = User(username="gargi",  email="gargi@example.com",  password_hash=generate_password_hash("password123", method="pbkdf2:sha256"))
+    user2 = User(username="alex",   email="alex@example.com",   password_hash=generate_password_hash("password123", method="pbkdf2:sha256"))
+    user3 = User(username="priya",  email="priya@example.com",  password_hash=generate_password_hash("password123", method="pbkdf2:sha256"))
+    user4 = User(username="john",   email="john@example.com",   password_hash=generate_password_hash("password123", method="pbkdf2:sha256"))
+    user5 = User(username="sarah",  email="sarah@example.com",  password_hash=generate_password_hash("password123", method="pbkdf2:sha256"))
+    user6 = User(username="mike",   email="mike@example.com",   password_hash=generate_password_hash("password123", method="pbkdf2:sha256"))
 
     db.session.add_all([user1, user2, user3, user4, user5, user6])
     db.session.commit()
@@ -85,25 +99,31 @@ with app.app_context():
     db.session.commit()
 
     participants = [
-        Participant(user_id=user2.id, event_id=event1.id),
-        Participant(user_id=user3.id, event_id=event1.id),
-        Participant(user_id=user4.id, event_id=event1.id),
+        Participant(user_id=user1.id, event_id=event1.id, role=ROLE_HOST),
+        Participant(user_id=user2.id, event_id=event1.id, role=ROLE_CO_HOST),
+        Participant(user_id=user3.id, event_id=event1.id, role=ROLE_PARTICIPANT),
+        Participant(user_id=user4.id, event_id=event1.id, role=ROLE_PARTICIPANT),
 
-        Participant(user_id=user1.id, event_id=event2.id),
-        Participant(user_id=user5.id, event_id=event2.id),
-        Participant(user_id=user6.id, event_id=event2.id),
+        Participant(user_id=user2.id, event_id=event2.id, role=ROLE_HOST),
+        Participant(user_id=user1.id, event_id=event2.id, role=ROLE_PARTICIPANT),
+        Participant(user_id=user5.id, event_id=event2.id, role=ROLE_PARTICIPANT),
+        Participant(user_id=user6.id, event_id=event2.id, role=ROLE_PARTICIPANT),
 
-        Participant(user_id=user1.id, event_id=event3.id),
-        Participant(user_id=user2.id, event_id=event3.id),
+        Participant(user_id=user3.id, event_id=event3.id, role=ROLE_HOST),
+        Participant(user_id=user1.id, event_id=event3.id, role=ROLE_PARTICIPANT),
+        Participant(user_id=user2.id, event_id=event3.id, role=ROLE_PARTICIPANT),
 
-        Participant(user_id=user3.id, event_id=event4.id),
-        Participant(user_id=user5.id, event_id=event4.id),
+        Participant(user_id=user4.id, event_id=event4.id, role=ROLE_HOST),
+        Participant(user_id=user3.id, event_id=event4.id, role=ROLE_PARTICIPANT),
+        Participant(user_id=user5.id, event_id=event4.id, role=ROLE_PARTICIPANT),
 
-        Participant(user_id=user1.id, event_id=event5.id),
-        Participant(user_id=user2.id, event_id=event5.id),
+        Participant(user_id=user5.id, event_id=event5.id, role=ROLE_HOST),
+        Participant(user_id=user1.id, event_id=event5.id, role=ROLE_PARTICIPANT),
+        Participant(user_id=user2.id, event_id=event5.id, role=ROLE_PARTICIPANT),
 
-        Participant(user_id=user3.id, event_id=event6.id),
-        Participant(user_id=user4.id, event_id=event6.id),
+        Participant(user_id=user6.id, event_id=event6.id, role=ROLE_HOST),
+        Participant(user_id=user3.id, event_id=event6.id, role=ROLE_PARTICIPANT),
+        Participant(user_id=user4.id, event_id=event6.id, role=ROLE_PARTICIPANT),
     ]
 
     db.session.add_all(participants)
