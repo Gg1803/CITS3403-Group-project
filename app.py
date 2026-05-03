@@ -20,15 +20,15 @@ from models import (
 )
 from dotenv import load_dotenv
 import os
-import smtplib
-from email.message import EmailMessage
-from zoneinfo import ZoneInfo
 import mailtrap as mt
+from flask_wtf import CSRFProtect
 
 # Load environment variables from .env before creating app config
 load_dotenv()
 
 app = Flask(__name__)
+
+csrf = CSRFProtect(app)
 
 # App configuration
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key")
@@ -55,7 +55,6 @@ migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
-
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -301,6 +300,7 @@ def get_invitations():
     return jsonify([serialize_invitation(invite) for invite in invites])
 
 
+@csrf.exempt
 @app.route("/api/invitations/<int:invitation_id>/accept", methods=["POST"])
 @login_required
 def accept_invitation(invitation_id):
@@ -329,6 +329,7 @@ def accept_invitation(invitation_id):
     return jsonify(serialize_invitation(invitation))
 
 
+@csrf.exempt
 @app.route("/api/invitations/<int:invitation_id>/decline", methods=["POST"])
 @login_required
 def decline_invitation(invitation_id):
@@ -343,6 +344,7 @@ def decline_invitation(invitation_id):
     return jsonify(serialize_invitation(invitation))
 
 
+@csrf.exempt
 @app.route("/event/<int:event_id>/invitations", methods=["POST"])
 @app.route("/event/<int:event_id>/participants", methods=["POST"])
 @login_required
@@ -404,6 +406,7 @@ def send_invitation(event_id):
 
 
 # AJAX - CREATE EVENT
+@csrf.exempt
 @app.route("/create-event", methods=["POST"])
 @login_required
 def create_event():
@@ -449,6 +452,7 @@ def create_event():
 
 
 # AJAX - DELETE EVENT
+@csrf.exempt
 @app.route("/event/<int:event_id>", methods=["DELETE"])
 @login_required
 def delete_event(event_id):
@@ -464,6 +468,7 @@ def delete_event(event_id):
 
 
 # AJAX - UPDATE EVENT
+@csrf.exempt
 @app.route("/event/<int:event_id>", methods=["PATCH"])
 @login_required
 def update_event(event_id):
@@ -503,6 +508,7 @@ def get_tasks(event_id):
     } for task in tasks])
 
 
+@csrf.exempt
 @app.route("/event/<int:event_id>/tasks", methods=["POST"])
 @login_required
 def add_task(event_id):
@@ -531,6 +537,7 @@ def add_task(event_id):
     })
 
 
+@csrf.exempt
 @app.route("/tasks/<int:task_id>/toggle", methods=["POST"])
 @login_required
 def toggle_task(task_id):
@@ -549,6 +556,7 @@ def toggle_task(task_id):
     })
 
 
+@csrf.exempt
 @app.route("/tasks/<int:task_id>", methods=["DELETE"])
 @login_required
 def delete_task(task_id):
@@ -576,6 +584,7 @@ def get_timeline(event_id):
     } for step in steps])
 
 
+@csrf.exempt
 @app.route("/event/<int:event_id>/timeline", methods=["POST"])
 @login_required
 def add_timeline(event_id):
@@ -603,6 +612,7 @@ def add_timeline(event_id):
     })
 
 
+@csrf.exempt
 @app.route("/timeline/<int:step_id>", methods=["DELETE"])
 @login_required
 def delete_timeline(step_id):
@@ -626,6 +636,7 @@ def get_participants(event_id):
     return jsonify([serialize_participant(row) for row in rows])
 
 
+@csrf.exempt
 @app.route("/participants/<int:participant_id>", methods=["DELETE"])
 @login_required
 def remove_participant(participant_id):
@@ -690,6 +701,7 @@ def get_polls(event_id):
     } for poll in polls])
 
 
+@csrf.exempt
 @app.route("/event/<int:event_id>/polls", methods=["POST"])
 @login_required
 def create_poll(event_id):
@@ -720,6 +732,7 @@ def create_poll(event_id):
     })
 
 
+@csrf.exempt
 @app.route("/polls/<int:poll_id>/vote/<int:option_id>", methods=["POST"])
 @login_required
 def vote(poll_id, option_id):
@@ -762,6 +775,7 @@ def get_voters(option_id):
 
 
 # AJAX - JOIN EVENT (discover page)
+@csrf.exempt
 @app.route("/event/<int:event_id>/join", methods=["POST"])
 @login_required
 def join_event(event_id):
@@ -796,6 +810,7 @@ def join_event(event_id):
 
 
 # AJAX - LEAVE EVENT (discover page)
+@csrf.exempt
 @app.route("/event/<int:event_id>/leave", methods=["DELETE"])
 @login_required
 def leave_event(event_id):
@@ -814,6 +829,7 @@ def leave_event(event_id):
 
 
 # AJAX - PROFILE UPDATE
+@csrf.exempt
 @app.route("/profile/update", methods=["POST"])
 @login_required
 def update_profile():
@@ -849,6 +865,10 @@ def send_password_change_email(user):
     try:
         token = os.environ.get("MAILTRAP_API_TOKEN")
 
+        if not token:
+            app.logger.error("MAILTRAP_API_TOKEN is missing from environment variables.")
+            return False
+
         mail = mt.Mail(
             sender=mt.Address(email="hello@demomailtrap.co", name="Eventure"),
             to=[mt.Address(email=user.email)],
@@ -878,6 +898,7 @@ Eventure Team
         return False
     
 # AJAX - PASSWORD UPDATE
+@csrf.exempt
 @app.route("/profile/password", methods=["POST"])
 @login_required
 def update_password():
