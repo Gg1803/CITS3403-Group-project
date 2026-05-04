@@ -112,6 +112,9 @@ source venv/bin/activate
 pip install flask flask-sqlalchemy werkzeug flask-login
 ```
 Or (if requirements.txt is available):
+```bash
+pip install Flask-WTF
+```
 
 ### Installation
 
