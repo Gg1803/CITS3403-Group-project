@@ -381,13 +381,10 @@ def send_invitation(event_id):
     if existing_invitation:
         if existing_invitation.status == "pending":
             return jsonify({"error": "Invitation already pending"}), 400
-
-        if existing_invitation.status in ("accepted", "joined"):
-            return jsonify({"error": "Invitation has already been accepted"}), 400
-
+        # If declined, reset to pending — "joined" case no longer occurs since
+        # invitation is deleted when user leaves
         existing_invitation.status = "pending"
         db.session.commit()
-
         return jsonify({
             "success": True,
             "message": "Invitation sent",
@@ -635,7 +632,6 @@ def get_participants(event_id):
 
     return jsonify([serialize_participant(row) for row in rows])
 
-
 @csrf.exempt
 @app.route("/participants/<int:participant_id>", methods=["DELETE"])
 @login_required
@@ -820,13 +816,20 @@ def leave_event(event_id):
     ).first_or_404()
 
     if participant.role == ROLE_HOST or participant.event.user_id == current_user.id:
-        return jsonify({"error": "The host cannot leave their own event"}), 400
+        return jsonify({"error": "The host cannot leave their own event, only can delete it"}), 400
 
     db.session.delete(participant)
+
+    # Delete invitation entirely so host can re-invite and it disappears from user's page
+    invitation = Invitation.query.filter_by(
+        user_id=current_user.id,
+        event_id=event_id
+    ).first()
+    if invitation:
+        db.session.delete(invitation)
+
     db.session.commit()
-
     return jsonify({"success": True})
-
 
 # AJAX - PROFILE UPDATE
 @csrf.exempt
