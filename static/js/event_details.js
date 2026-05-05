@@ -1,5 +1,6 @@
 // Get the event ID from the body data attribute
 const EVENT_ID = document.body.dataset.eventId;
+const IS_PUBLIC = document.body.dataset.isPublic === "true";
 const CURRENT_ROLE = document.body.dataset.currentRole || "";
 const CAN_EDIT = document.body.dataset.canEdit === "true";
 const CAN_MANAGE_PARTICIPANTS = document.body.dataset.canManageParticipants === "true";
@@ -264,7 +265,7 @@ function renderParticipants(participants) {
     const item = document.createElement("div");
     item.className = "item-card";
     const roleLabel = formatRole(p.role);
-    const roleAction = CAN_ASSIGN_ROLES && p.role !== "host" ? `
+    const roleAction = CAN_ASSIGN_ROLES && p.role !== "host" && IS_PUBLIC ? `
       <button class="icon-btn participant-role" type="button">
         ${p.role === "co_host" ? "Make Participant" : "Make Co-host"}
       </button>
@@ -324,10 +325,65 @@ async function loadParticipants() {
   renderParticipants(participants);
 }
 
+/* User search dropdown */
+const searchDropdown = document.getElementById("userSearchDropdown");
+let searchTimer = null;
+let selectedEmail = "";
+
+participantEmailInput.addEventListener("input", () => {
+  const q = participantEmailInput.value.trim();
+  selectedEmail = "";  // reset selection on new input
+  clearTimeout(searchTimer);
+
+  if (q.length < 2) {
+    searchDropdown.style.display = "none";
+    searchDropdown.innerHTML = "";
+    return;
+  }
+
+  searchTimer = setTimeout(async () => {
+    const res   = await fetch(`/users/search?q=${encodeURIComponent(q)}`);
+    const users = await res.json();
+
+    if (users.length === 0) {
+      searchDropdown.style.display = "none";
+      return;
+    }
+
+    searchDropdown.innerHTML = users.map(u => `
+      <div class="search-result-item" data-email="${u.email}"
+           style="padding:10px 14px; cursor:pointer; font-size:0.88rem;
+                  border-bottom:1px solid #f1f5f9; color:#1f2933;">
+        <strong>${u.username}</strong>
+        <span style="color:#6b7280; margin-left:6px;">${u.email}</span>
+      </div>
+    `).join("");
+
+    searchDropdown.style.display = "block";
+
+    searchDropdown.querySelectorAll(".search-result-item").forEach(item => {
+      item.addEventListener("mouseenter", () => item.style.background = "#f1f5f9");
+      item.addEventListener("mouseleave", () => item.style.background = "");
+      item.addEventListener("click", () => {
+        selectedEmail = item.dataset.email;
+        participantEmailInput.value = selectedEmail;
+        searchDropdown.style.display = "none";
+      });
+    });
+  }, 300);
+});
+
+// Close dropdown on outside click
+document.addEventListener("click", e => {
+  if (!participantEmailInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+    searchDropdown.style.display = "none";
+  }
+});
+
 addParticipantBtn.addEventListener("click", async () => {
   if (!CAN_MANAGE_PARTICIPANTS) return;
 
-  const email = participantEmailInput.value.trim();
+  const email = (selectedEmail || participantEmailInput.value).trim();
   if (!email) return;
 
   addParticipantBtn.disabled = true;
@@ -339,6 +395,7 @@ addParticipantBtn.addEventListener("click", async () => {
     body:    JSON.stringify({ email })
   });
   const data = await res.json();
+
   addParticipantBtn.disabled = false;
   addParticipantBtn.textContent = "Invite";
 
@@ -346,9 +403,12 @@ addParticipantBtn.addEventListener("click", async () => {
     alert(data.error);
     return;
   }
+
   participantEmailInput.value = "";
+  selectedEmail = "";
+  searchDropdown.style.display = "none";
   closeModal(participantModal);
-  alert("Invitation sent. The user will join this event after accepting it.");
+  alert("Invitation sent. The user will join after accepting it.");
 });
 
 /* Voters popup in poll */

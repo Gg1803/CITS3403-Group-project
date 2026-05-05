@@ -625,6 +625,19 @@ def delete_timeline(step_id):
 
 
 # AJAX - PARTICIPANTS
+# search users
+@app.route("/users/search", methods=["GET"])
+@login_required
+def search_users():
+    query = request.args.get("q", "").strip()
+    if len(query) < 2:
+        return jsonify([])
+    users = User.query.filter(
+        User.email.ilike(f"%{query}%"),
+        User.id != current_user.id
+    ).limit(6).all()
+    return jsonify([{"username": u.username, "email": u.email} for u in users])
+
 @app.route("/event/<int:event_id>/participants", methods=["GET"])
 @login_required
 def get_participants(event_id):
@@ -656,6 +669,7 @@ def remove_participant(participant_id):
     return jsonify({"success": True})
 
 
+@csrf.exempt
 @app.route("/participants/<int:participant_id>/role", methods=["PATCH"])
 @login_required
 def update_participant_role(participant_id):
