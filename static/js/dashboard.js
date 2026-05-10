@@ -15,7 +15,11 @@ function goTo(page) { window.location.href = page; }
 
 let modal;
 
-function openModal() { modal.style.display = "flex"; }
+function openModal() {
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("date").min = today;
+  modal.style.display = "flex";
+}
 function closeModal() { modal.style.display = "none"; }
 
 window.onclick = e => { if (e.target === modal) closeModal(); };
