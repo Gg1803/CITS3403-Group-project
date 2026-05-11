@@ -90,7 +90,7 @@ async function submitEvent() {
     return;
   }
 
-  const response = await fetch("/create-event", {
+  const response = await csrfFetch("/create-event", {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -165,7 +165,7 @@ function addEventCard(e) {
 
 async function deleteEvent(eventId, btn) {
   if (!confirm("Are you sure you want to delete this event?")) return;
-  const res  = await fetch(`/event/${eventId}`, { method: "DELETE" });
+  const res  = await csrfFetch(`/event/${eventId}`, { method: "DELETE" });
   const data = await res.json();
   if (data.success) {
     const card = btn.closest(".card");
@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!confirm("Leave this event?")) return;
 
     const eventId = btn.dataset.eventId;
-    const res     = await fetch(`/event/${eventId}/leave`, { method: "DELETE" });
+    const res     = await csrfFetch(`/event/${eventId}/leave`, { method: "DELETE" });
     const data    = await res.json();
 
     if (data.success) {

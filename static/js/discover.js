@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const eventId = btn.dataset.eventId;
 
-    const res  = await fetch(`/event/${eventId}/join`, { method: "POST" });
+    const res  = await csrfFetch(`/event/${eventId}/join`, { method: "POST" });
     const data = await res.json();
 
     if (data.error) {

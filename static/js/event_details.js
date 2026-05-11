@@ -130,11 +130,11 @@ function renderTasks(tasks) {
       </div>
     `;
     item.querySelector(".task-complete").addEventListener("click", async () => {
-      await fetch(`/tasks/${task.id}/toggle`, { method: "POST" });
+      await csrfFetch(`/tasks/${task.id}/toggle`, { method: "POST" });
       loadTasks();
     });
     item.querySelector(".task-delete").addEventListener("click", async () => {
-      await fetch(`/tasks/${task.id}`, { method: "DELETE" });
+      await csrfFetch(`/tasks/${task.id}`, { method: "DELETE" });
       loadTasks();
     });
     taskList.appendChild(item);
@@ -152,7 +152,7 @@ addTaskBtn.addEventListener("click", async () => {
   const name       = taskNameInput.value.trim();
   const assignedTo = taskAssignedToInput.value.trim();
   if (!name) return;
-  await fetch(`/event/${EVENT_ID}/tasks`, {
+  await csrfFetch(`/event/${EVENT_ID}/tasks`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
     body:    JSON.stringify({ name, assigned_to: assignedTo })
@@ -181,7 +181,7 @@ function renderTimeline(steps) {
       </div>
     `;
     item.querySelector(".timeline-delete").addEventListener("click", async () => {
-      await fetch(`/timeline/${step.id}`, { method: "DELETE" });
+      await csrfFetch(`/timeline/${step.id}`, { method: "DELETE" });
       loadTimeline();
     });
     timelineList.appendChild(item);
@@ -197,7 +197,7 @@ async function loadTimeline() {
 addTimelineBtn.addEventListener("click", async () => {
   const step = timelineStepInput.value.trim();
   if (!step) return;
-  await fetch(`/event/${EVENT_ID}/timeline`, {
+  await csrfFetch(`/event/${EVENT_ID}/timeline`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
     body:    JSON.stringify({ step })
@@ -230,7 +230,7 @@ function renderParticipants(participants) {
       </div>
     `;
     item.querySelector(".participant-delete").addEventListener("click", async () => {
-      await fetch(`/participants/${p.id}`, { method: "DELETE" });
+      await csrfFetch(`/participants/${p.id}`, { method: "DELETE" });
       loadParticipants();
     });
     participantList.appendChild(item);
@@ -250,7 +250,7 @@ addParticipantBtn.addEventListener("click", async () => {
   addParticipantBtn.disabled = true;
   addParticipantBtn.textContent = "Sending...";
 
-  const res  = await fetch(`/event/${EVENT_ID}/invitations`, {
+  const res  = await csrfFetch(`/event/${EVENT_ID}/invitations`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
     body:    JSON.stringify({ email })
@@ -382,7 +382,7 @@ function renderPoll() {
     btn.addEventListener("click", async () => {
       const pollId   = btn.dataset.pollId;
       const optionId = btn.dataset.optionId;
-      const res      = await fetch(`/polls/${pollId}/vote/${optionId}`, { method: "POST" });
+      const res      = await csrfFetch(`/polls/${pollId}/vote/${optionId}`, { method: "POST" });
       const data     = await res.json();
       if (data.error) { alert(data.error); return; }
       await loadPolls();
@@ -443,7 +443,7 @@ createPollBtn.addEventListener("click", async () => {
     alert("Please enter a question and at least 2 options.");
     return;
   }
-  await fetch(`/event/${EVENT_ID}/polls`, {
+  await csrfFetch(`/event/${EVENT_ID}/polls`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
     body:    JSON.stringify({ question, options })
@@ -471,7 +471,7 @@ eventLocationInput.addEventListener("input", updateTopInfo);
 
 /* ── Save event details ───────────────────────────────────────── */
 async function saveEvent() {
-  const res = await fetch(`/event/${EVENT_ID}`, {
+  const res = await csrfFetch(`/event/${EVENT_ID}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_migrate import Migrate
+from flask_wtf.csrf import CSRFProtect
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from models import db, User, Event, Participant, Invitation, Task, Timeline, Poll, PollOption, Vote
@@ -32,6 +34,8 @@ app.config["MAIL_DEFAULT_SENDER"] = os.environ.get(
 )
 
 db.init_app(app)
+migrate = Migrate(app, db)
+csrf = CSRFProtect(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)

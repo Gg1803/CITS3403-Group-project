@@ -114,7 +114,7 @@ async function updateInvitationStatus(item, action, button) {
   }
 
   try {
-    const res = await fetch(`/api/invitations/${item.id}/${action}`, { method: "POST" });
+    const res = await csrfFetch(`/api/invitations/${item.id}/${action}`, { method: "POST" });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Request failed");
 
