@@ -36,7 +36,7 @@ async function saveProfile() {
   }
 
   try {
-    const res = await fetch("/profile/update", {
+    const res = await csrfFetch("/profile/update", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username: name, email: email })
@@ -85,7 +85,7 @@ async function changePassword() {
   }
 
   try {
-    const res = await fetch("/profile/password", {
+    const res = await csrfFetch("/profile/password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
