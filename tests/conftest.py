@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, BASE_DIR)
+os.environ.setdefault("SECRET_KEY", "test-secret-key")
 
 from app import app
 from models import db, User, Event, Participant, Invitation

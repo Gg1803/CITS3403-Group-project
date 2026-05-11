@@ -1,22 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% extends "base.html" %}
+
+{% block title %}Event Details{% endblock %}
+
+{% block csrf_meta %}
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Event Details</title>
+{% endblock %}
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+{% block styles %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/event_details.css') }}">
-</head>
+{% endblock %}
 
-<body
+{% block body_attrs %}
   data-event-id="{{ event.id }}"
   data-current-role="{{ current_role or '' }}"
   data-can-edit="{{ 'true' if can_edit else 'false' }}"
@@ -24,7 +18,9 @@
   data-can-assign-roles="{{ 'true' if can_assign_roles else 'false' }}"
   data-can-vote="{{ 'true' if can_vote else 'false' }}"
   data-is-public="{{ 'true' if event.is_public else 'false' }}"
->
+{% endblock %}
+
+{% block content %}
 <div class="page-wrapper">
 
   <!-- TOPBAR -->
@@ -297,7 +293,9 @@
   </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
 <script src="{{ url_for('static', filename='js/csrf.js') }}"></script>
 <script src="{{ url_for('static', filename='js/event_details.js') }}"></script>
-</body>
-</html>
+{% endblock %}

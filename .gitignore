@@ -11,6 +11,9 @@ env/
 
 # Testing
 .pytest_cache/
+.selenium-cache/
+tests/seleniumtest/.wdm/
+chrome-test.*/
 
 # Database
 instance/

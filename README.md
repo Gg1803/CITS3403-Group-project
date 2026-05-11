@@ -58,21 +58,22 @@ The project includes:
 ### Run all tests
 
 ```bash
-PYTHONPATH=. python -m pytest tests
+PYTHONPATH=. python -m pytest
 ```
 
 ### Run unit tests only
 
 ```bash
-PYTHONPATH=. python -m pytest tests/test_forms.py tests/test_routes.py tests/test_usermodels.py
+PYTHONPATH=. python -m pytest tests/unittest
 ```
 
 ### Run Selenium tests
 
-(make sure the server is running)
+The Selenium tests start a live Flask test server automatically. They require
+Google Chrome to be installed locally.
 
 ```bash
-PYTHONPATH=. python -m pytest tests/test_selenium.py
+PYTHONPATH=. python -m pytest tests/seleniumtest
 ```
 
 ---
