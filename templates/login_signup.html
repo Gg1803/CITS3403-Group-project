@@ -1,19 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Eventure — Login</title>
+{% extends "base.html" %}
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+{% block title %}Eventure — Login{% endblock %}
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+{% block styles %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/login_signup.css') }}">
+{% endblock %}
 
-  <script src="https://unpkg.com/lucide@latest"></script>
-</head>
-
-<body>
+{% block content %}
   <div class="container">
 
     <div class="logo-wrapper">
@@ -111,8 +104,9 @@
     {% endif %}
 
   </div>
+{% endblock %}
 
+{% block scripts %}
   <script src="{{ url_for('static', filename='js/login_signup.js') }}"></script>
   <script>lucide.createIcons();</script>
-</body>
-</html>
+{% endblock %}

@@ -1,18 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
+{% extends "base.html" %}
+
+{% block title %}Profile &amp; Settings{% endblock %}
+
+{% block csrf_meta %}
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Profile &amp; Settings</title>
+{% endblock %}
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+{% block styles %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
 
 <div class="container">
 
@@ -105,7 +104,9 @@
   </div><!-- /cards-row -->
 
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
   // Initialize from backend (Jinja)
   window.userData = {
@@ -123,6 +124,4 @@
   document.getElementById("emailInput").value = window.userData.email;
   lucide.createIcons();
 </script>
-
-</body>
-</html>
+{% endblock %}
