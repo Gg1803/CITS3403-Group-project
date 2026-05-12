@@ -1,25 +1,37 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_migrate import Migrate
-from flask_wtf.csrf import CSRFProtect
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from models import db, User, Event, Participant, Invitation, Task, Timeline, Poll, PollOption, Vote
+from models import (
+    db,
+    ROLE_CO_HOST,
+    ROLE_HOST,
+    ROLE_PARTICIPANT,
+    User,
+    Event,
+    Participant,
+    Invitation,
+    Task,
+    Timeline,
+    Poll,
+    PollOption,
+    Vote
+)
 from dotenv import load_dotenv
 import os
-import smtplib
-from email.message import EmailMessage
-from zoneinfo import ZoneInfo
 import mailtrap as mt
+from flask_wtf import CSRFProtect
 
+# Load environment variables from .env before creating app config
 load_dotenv()
 
 app = Flask(__name__)
 
-secret_key = os.environ.get("SECRET_KEY")
-if not secret_key:
-    raise RuntimeError("SECRET_KEY environment variable must be set.")
-app.config["SECRET_KEY"] = secret_key
+csrf = CSRFProtect(app)
+
+# App configuration
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key")
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
     "DATABASE_URL",
@@ -27,6 +39,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+# Email configuration
 app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER")
 app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", 587))
 app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
@@ -38,16 +51,85 @@ app.config["MAIL_DEFAULT_SENDER"] = os.environ.get(
 
 db.init_app(app)
 migrate = Migrate(app, db)
-csrf = CSRFProtect(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+def permission_denied(message="Permission denied"):
+    return jsonify({"error": message}), 403
+
+
+def get_event_role(event, user_id=None):
+    user_id = user_id or current_user.id
+
+    if event.user_id == user_id:
+        return ROLE_HOST
+
+    participant = Participant.query.filter_by(
+        event_id=event.id,
+        user_id=user_id
+    ).first()
+
+    return participant.role if participant else None
+
+
+def get_event_participant(event, user_id=None):
+    user_id = user_id or current_user.id
+
+    return Participant.query.filter_by(
+        event_id=event.id,
+        user_id=user_id
+    ).first()
+
+
+def can_edit_event(event, user_id=None):
+    role = get_event_role(event, user_id)
+
+    if not role:
+        return False
+
+    if not event.is_public:
+        return True
+
+    return role in (ROLE_HOST, ROLE_CO_HOST)
+
+
+def can_manage_participants(event, user_id=None):
+    return get_event_role(event, user_id) in (ROLE_HOST, ROLE_CO_HOST)
+
+
+def can_assign_roles(event, user_id=None):
+    return get_event_role(event, user_id) == ROLE_HOST
+
+
+def can_vote_in_event(event, user_id=None):
+    return get_event_role(event, user_id) is not None
+
+
+def event_permissions(event):
+    role = get_event_role(event)
+
+    return {
+        "current_role": role,
+        "can_edit": can_edit_event(event),
+        "can_manage_participants": can_manage_participants(event),
+        "can_assign_roles": can_assign_roles(event),
+        "can_vote": can_vote_in_event(event)
+    }
+
+
+def serialize_participant(participant):
+    return {
+        "id": participant.id,
+        "username": participant.user.username,
+        "role": participant.role
+    }
 
 
 # AUTH
@@ -80,6 +162,7 @@ def signup():
     email = request.form["email"]
     password = request.form["password"]
 
+    # Validation: email uniqueness
     if User.query.filter_by(email=email).first():
         return render_template(
             "login_signup.html",
@@ -87,6 +170,7 @@ def signup():
             prefill_email=email
         )
 
+    # Validation: password strength
     if len(password) < 8:
         return render_template(
             "login_signup.html",
@@ -102,7 +186,7 @@ def signup():
     new_user = User(
         username=username,
         email=email,
-        password_hash=generate_password_hash(password)
+        password_hash=generate_password_hash(password, method="pbkdf2:sha256")
     )
 
     db.session.add(new_user)
@@ -123,7 +207,12 @@ def logout():
 @login_required
 def dashboard():
     owned_events = Event.query.filter_by(user_id=current_user.id).all()
-    joined_rows = Participant.query.filter_by(user_id=current_user.id).all()
+
+    joined_rows = Participant.query.filter(
+        Participant.user_id == current_user.id,
+        Participant.role != ROLE_HOST
+    ).all()
+
     joined_events = [row.event for row in joined_rows]
 
     return render_template(
@@ -136,6 +225,7 @@ def dashboard():
 @app.route("/discover")
 @login_required
 def discover():
+    # Get event IDs the user created or already joined
     joined_ids = {
         p.event_id for p in Participant.query.filter_by(user_id=current_user.id).all()
     }
@@ -171,7 +261,8 @@ def event_details(event_id):
         invitations=invitations,
         tasks=tasks,
         timelines=timelines,
-        polls=polls
+        polls=polls,
+        **event_permissions(event)
     )
 
 
@@ -213,7 +304,19 @@ def get_invitations():
     invites = Invitation.query.filter_by(user_id=current_user.id).all()
     return jsonify([serialize_invitation(invite) for invite in invites])
 
+@app.route("/users/search", methods=["GET"])
+@login_required
+def search_users():
+    query = request.args.get("q", "").strip()
+    if len(query) < 2:
+        return jsonify([])
+    users = User.query.filter(
+        User.email.ilike(f"%{query}%"),
+        User.id != current_user.id
+    ).limit(6).all()
+    return jsonify([{"username": u.username, "email": u.email} for u in users])
 
+@csrf.exempt
 @app.route("/api/invitations/<int:invitation_id>/accept", methods=["POST"])
 @login_required
 def accept_invitation(invitation_id):
@@ -231,13 +334,18 @@ def accept_invitation(invitation_id):
 
     if not existing:
         db.session.add(
-            Participant(user_id=current_user.id, event_id=invitation.event_id)
+            Participant(
+                user_id=current_user.id,
+                event_id=invitation.event_id,
+                role=ROLE_PARTICIPANT
+            )
         )
 
     db.session.commit()
     return jsonify(serialize_invitation(invitation))
 
 
+@csrf.exempt
 @app.route("/api/invitations/<int:invitation_id>/decline", methods=["POST"])
 @login_required
 def decline_invitation(invitation_id):
@@ -252,14 +360,15 @@ def decline_invitation(invitation_id):
     return jsonify(serialize_invitation(invitation))
 
 
+@csrf.exempt
 @app.route("/event/<int:event_id>/invitations", methods=["POST"])
 @app.route("/event/<int:event_id>/participants", methods=["POST"])
 @login_required
 def send_invitation(event_id):
     event = Event.query.get_or_404(event_id)
 
-    if event.user_id != current_user.id:
-        return jsonify({"error": "Only the event owner can invite participants"}), 403
+    if not can_manage_participants(event):
+        return permission_denied("Only hosts or co-hosts can invite participants")
 
     data = request.get_json(silent=True) or {}
     email = data.get("email", "").strip().lower()
@@ -288,13 +397,8 @@ def send_invitation(event_id):
     if existing_invitation:
         if existing_invitation.status == "pending":
             return jsonify({"error": "Invitation already pending"}), 400
-
-        if existing_invitation.status in ("accepted", "joined"):
-            return jsonify({"error": "Invitation has already been accepted"}), 400
-
         existing_invitation.status = "pending"
         db.session.commit()
-
         return jsonify({
             "success": True,
             "message": "Invitation sent",
@@ -313,27 +417,21 @@ def send_invitation(event_id):
 
 
 # AJAX - CREATE EVENT
+@csrf.exempt
 @app.route("/create-event", methods=["POST"])
 @login_required
 def create_event():
     data = request.get_json(silent=True) or {}
 
     event_type = data.get("type")
+
     if event_type == "Custom":
         event_type = data.get("customType") or "Custom"
-
-    date_str = data.get("date")
-    if not date_str:
-        return jsonify({"error": "Event date is required."}), 400
-
-    event_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-    if event_date < datetime.today().date():
-        return jsonify({"error": "Event date cannot be in the past."}), 400
 
     new_event = Event(
         title=data.get("title"),
         event_type=event_type,
-        event_date=datetime.strptime(date_str, "%Y-%m-%d"),
+        event_date=datetime.strptime(data.get("date"), "%Y-%m-%d"),
         location=data.get("location"),
         description=data.get("description", ""),
         is_public=data.get("is_public", False),
@@ -341,8 +439,17 @@ def create_event():
     )
 
     db.session.add(new_event)
+    db.session.flush()
+    db.session.add(
+        Participant(
+            user_id=current_user.id,
+            event_id=new_event.id,
+            role=ROLE_HOST
+        )
+    )
     db.session.commit()
 
+    # Return the new event data as JSON so JS can add the card without reload
     return jsonify({
         "id": new_event.id,
         "title": new_event.title,
@@ -351,11 +458,12 @@ def create_event():
         "location": new_event.location,
         "description": new_event.description,
         "is_public": new_event.is_public,
-        "participants": 0
+        "participants": 1
     })
 
 
 # AJAX - DELETE EVENT
+@csrf.exempt
 @app.route("/event/<int:event_id>", methods=["DELETE"])
 @login_required
 def delete_event(event_id):
@@ -371,13 +479,14 @@ def delete_event(event_id):
 
 
 # AJAX - UPDATE EVENT
+@csrf.exempt
 @app.route("/event/<int:event_id>", methods=["PATCH"])
 @login_required
 def update_event(event_id):
     event = Event.query.get_or_404(event_id)
 
-    if event.user_id != current_user.id:
-        return jsonify({"error": "Unauthorised"}), 403
+    if not can_edit_event(event):
+        return permission_denied()
 
     data = request.get_json(silent=True) or {}
 
@@ -386,10 +495,14 @@ def update_event(event_id):
     event.location = data.get("location", event.location)
 
     if data.get("date"):
-        new_date = datetime.strptime(data["date"], "%Y-%m-%d").date()
-        if new_date < datetime.today().date():
-            return jsonify({"error": "Event date cannot be in the past."}), 400
-        event.event_date = datetime.strptime(data["date"], "%Y-%m-%d")
+        new_date = datetime.strptime(data["date"], "%Y-%m-%d")
+
+        if new_date.date() < datetime.now().date():
+            return jsonify({
+                "error": "Past dates are not allowed."
+            }), 400
+
+        event.event_date = new_date
 
     event.description = data.get("description", event.description)
     event.is_public = data.get("is_public", event.is_public)
@@ -413,9 +526,15 @@ def get_tasks(event_id):
     } for task in tasks])
 
 
+@csrf.exempt
 @app.route("/event/<int:event_id>/tasks", methods=["POST"])
 @login_required
 def add_task(event_id):
+    event = Event.query.get_or_404(event_id)
+
+    if not can_edit_event(event):
+        return permission_denied()
+
     data = request.get_json(silent=True) or {}
 
     task = Task(
@@ -436,10 +555,15 @@ def add_task(event_id):
     })
 
 
+@csrf.exempt
 @app.route("/tasks/<int:task_id>/toggle", methods=["POST"])
 @login_required
 def toggle_task(task_id):
     task = Task.query.get_or_404(task_id)
+
+    if not can_edit_event(task.event):
+        return permission_denied()
+
     task.completed = not task.completed
 
     db.session.commit()
@@ -450,10 +574,14 @@ def toggle_task(task_id):
     })
 
 
+@csrf.exempt
 @app.route("/tasks/<int:task_id>", methods=["DELETE"])
 @login_required
 def delete_task(task_id):
     task = Task.query.get_or_404(task_id)
+
+    if not can_edit_event(task.event):
+        return permission_denied()
 
     db.session.delete(task)
     db.session.commit()
@@ -474,9 +602,15 @@ def get_timeline(event_id):
     } for step in steps])
 
 
+@csrf.exempt
 @app.route("/event/<int:event_id>/timeline", methods=["POST"])
 @login_required
 def add_timeline(event_id):
+    event = Event.query.get_or_404(event_id)
+
+    if not can_edit_event(event):
+        return permission_denied()
+
     data = request.get_json(silent=True) or {}
     step_text = data.get("step", "").strip()
     after_order = data.get("after_order") 
@@ -512,10 +646,14 @@ def add_timeline(event_id):
     } for s in steps])
 
 
+@csrf.exempt
 @app.route("/timeline/<int:step_id>", methods=["DELETE"])
 @login_required
 def delete_timeline(step_id):
     step = Timeline.query.get_or_404(step_id)
+
+    if not can_edit_event(step.event):
+        return permission_denied()
 
     db.session.delete(step)
     db.session.commit()
@@ -527,24 +665,100 @@ def delete_timeline(step_id):
 @app.route("/event/<int:event_id>/participants", methods=["GET"])
 @login_required
 def get_participants(event_id):
-    rows = Participant.query.filter_by(event_id=event_id).all()
+    event = Event.query.get_or_404(event_id)
+
+    participants = Participant.query.filter_by(
+        event_id=event_id
+    ).all()
+
+    return jsonify([
+        serialize_participant(participant)
+        for participant in participants
+    ])
+
+@app.route("/event/<int:event_id>/pending-invitations", methods=["GET"])
+@login_required
+def get_event_invitations(event_id):
+    event = Event.query.get_or_404(event_id)
+
+    if not can_manage_participants(event):
+        return permission_denied()
+
+    invitations = Invitation.query.filter_by(
+        event_id=event_id,
+        status="pending"
+    ).all()
 
     return jsonify([{
-        "id": row.id,
-        "username": row.user.username
-    } for row in rows])
+        "id": invite.id,
+        "username": invite.user.username,
+        "email": invite.user.email,
+        "status": invite.status
+    } for invite in invitations])
 
+@csrf.exempt
+@app.route("/invitations/<int:invitation_id>", methods=["DELETE"])
+@login_required
+def delete_invitation(invitation_id):
+    invitation = Invitation.query.get_or_404(invitation_id)
 
+    event = invitation.event
+
+    if not can_manage_participants(event):
+        return permission_denied()
+
+    db.session.delete(invitation)
+    db.session.commit()
+
+    return jsonify({"success": True})
+
+@csrf.exempt
 @app.route("/participants/<int:participant_id>", methods=["DELETE"])
 @login_required
 def remove_participant(participant_id):
     participant = Participant.query.get_or_404(participant_id)
+    event = participant.event
+
+    if not can_manage_participants(event):
+        return permission_denied()
+
+    if participant.role == ROLE_HOST or participant.user_id == event.user_id:
+        return jsonify({"error": "The host cannot be removed"}), 400
+
+    current_role = get_event_role(event)
+
+    if current_role == ROLE_CO_HOST and participant.role == ROLE_CO_HOST:
+        return permission_denied("Only the host can remove a co-host")
 
     db.session.delete(participant)
     db.session.commit()
 
     return jsonify({"success": True})
 
+
+@csrf.exempt
+@app.route("/participants/<int:participant_id>/role", methods=["PATCH"])
+@login_required
+def update_participant_role(participant_id):
+    participant = Participant.query.get_or_404(participant_id)
+    event = participant.event
+
+    if not can_assign_roles(event):
+        return permission_denied("Only the host can manage roles")
+
+    if participant.role == ROLE_HOST or participant.user_id == event.user_id:
+        return jsonify({"error": "The host role cannot be changed"}), 400
+
+    data = request.get_json(silent=True) or {}
+    new_role = data.get("role")
+
+    if new_role not in (ROLE_CO_HOST, ROLE_PARTICIPANT):
+        return jsonify({"error": "Invalid role"}), 400
+
+    participant.role = new_role
+    db.session.commit()
+
+    return jsonify(serialize_participant(participant))
 
 # AJAX - POLLS
 @app.route("/event/<int:event_id>/polls", methods=["GET"])
@@ -563,9 +777,15 @@ def get_polls(event_id):
     } for poll in polls])
 
 
+@csrf.exempt
 @app.route("/event/<int:event_id>/polls", methods=["POST"])
 @login_required
 def create_poll(event_id):
+    event = Event.query.get_or_404(event_id)
+
+    if not can_edit_event(event):
+        return permission_denied()
+
     data = request.get_json(silent=True) or {}
 
     poll = Poll(question=data["question"], event_id=event_id)
@@ -588,9 +808,18 @@ def create_poll(event_id):
     })
 
 
+@csrf.exempt
 @app.route("/polls/<int:poll_id>/vote/<int:option_id>", methods=["POST"])
 @login_required
 def vote(poll_id, option_id):
+    option = PollOption.query.get_or_404(option_id)
+
+    if option.poll_id != poll_id:
+        return jsonify({"error": "Invalid poll option"}), 400
+
+    if not can_vote_in_event(option.poll.event):
+        return permission_denied("Only participants can vote")
+
     existing = Vote.query.filter_by(
         user_id=current_user.id,
         option_id=option_id
@@ -603,8 +832,6 @@ def vote(poll_id, option_id):
 
     db.session.add(vote_record)
     db.session.commit()
-
-    option = PollOption.query.get(option_id)
 
     return jsonify({
         "option_id": option_id,
@@ -624,10 +851,14 @@ def get_voters(option_id):
 
 
 # AJAX - JOIN EVENT (discover page)
+@csrf.exempt
 @app.route("/event/<int:event_id>/join", methods=["POST"])
 @login_required
 def join_event(event_id):
     event = Event.query.get_or_404(event_id)
+
+    if not event.is_public:
+        return permission_denied("Private events require an invitation")
 
     existing = Participant.query.filter_by(
         user_id=current_user.id,
@@ -637,7 +868,11 @@ def join_event(event_id):
     if existing:
         return jsonify({"error": "Already joined"}), 400
 
-    participant = Participant(user_id=current_user.id, event_id=event_id)
+    participant = Participant(
+        user_id=current_user.id,
+        event_id=event_id,
+        role=ROLE_PARTICIPANT
+    )
 
     db.session.add(participant)
     db.session.commit()
@@ -651,6 +886,7 @@ def join_event(event_id):
 
 
 # AJAX - LEAVE EVENT
+@csrf.exempt
 @app.route("/event/<int:event_id>/leave", methods=["DELETE"])
 @login_required
 def leave_event(event_id):
@@ -659,13 +895,25 @@ def leave_event(event_id):
         event_id=event_id
     ).first_or_404()
 
-    db.session.delete(participant)
-    db.session.commit()
+    if participant.role == ROLE_HOST or participant.event.user_id == current_user.id:
+        return jsonify({"error": "The host cannot leave their own event"}), 400
 
+    db.session.delete(participant)
+
+    # Delete invitation entirely so host can re-invite and it disappears from user's page
+    invitation = Invitation.query.filter_by(
+        user_id=current_user.id,
+        event_id=event_id
+    ).first()
+    if invitation:
+        db.session.delete(invitation)
+
+    db.session.commit()
     return jsonify({"success": True})
 
 
 # AJAX - PROFILE UPDATE
+@csrf.exempt
 @app.route("/profile/update", methods=["POST"])
 @login_required
 def update_profile():
@@ -674,6 +922,7 @@ def update_profile():
     new_email = data.get("email", "").strip().lower()
     new_username = data.get("username", "").strip()
 
+    # Validation: email uniqueness, excluding current user
     if new_email and new_email != current_user.email:
         existing = User.query.filter_by(email=new_email).first()
 
@@ -696,10 +945,13 @@ def update_profile():
         "email": current_user.email
     })
 
-
 def send_password_change_email(user):
     try:
         token = os.environ.get("MAILTRAP_API_TOKEN")
+
+        if not token:
+            app.logger.error("MAILTRAP_API_TOKEN is missing from environment variables.")
+            return False
 
         mail = mt.Mail(
             sender=mt.Address(email="hello@demomailtrap.co", name="Eventure"),
@@ -728,9 +980,9 @@ Eventure Team
     except Exception as e:
         print("MAIL ERROR:", e)
         return False
-
-
+    
 # AJAX - PASSWORD UPDATE
+@csrf.exempt
 @app.route("/profile/password", methods=["POST"])
 @login_required
 def update_password():
@@ -759,7 +1011,10 @@ def update_password():
             "error": "New password must contain at least one uppercase letter."
         }), 400
 
-    current_user.password_hash = generate_password_hash(new_password)
+    current_user.password_hash = generate_password_hash(
+        new_password,
+        method="pbkdf2:sha256"
+    )
     db.session.commit()
 
     email_sent = send_password_change_email(current_user)
