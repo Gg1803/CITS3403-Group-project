@@ -135,6 +135,37 @@ DATABASE_URL=sqlite:///database.db
 ```bash
 flask --app app db upgrade
 ```
+### 5. Setup database
+
+If you are using macOS and encounter database errors such as:
+
+```bash
+sqlalchemy.exc.OperationalError: no such table: user
+```
+
+Run the following commands:
+
+```bash
+rm -f instance/database.db
+source venv/bin/activate
+python
+```
+
+Then inside the Python terminal:
+
+```python
+from app import app
+from models import db
+
+with app.app_context():
+    db.create_all()
+```
+
+Press `Enter` twice after `db.create_all()` to close the block, then type:
+
+```python
+exit()
+```
 
 ### 6. Seed database (optional)
 
