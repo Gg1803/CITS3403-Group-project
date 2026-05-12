@@ -159,11 +159,7 @@ from models import db
 
 with app.app_context():
     db.create_all()
-```
 
-Press `Enter` twice after `db.create_all()` to close the block, then type:
-
-```python
 exit()
 ```
 
