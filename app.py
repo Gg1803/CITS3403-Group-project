@@ -612,22 +612,38 @@ def add_timeline(event_id):
         return permission_denied()
 
     data = request.get_json(silent=True) or {}
-    count = Timeline.query.filter_by(event_id=event_id).count()
+    step_text = data.get("step", "").strip()
+    after_order = data.get("after_order") 
+
+    if not step_text:
+        return jsonify({"error": "Step text is required."}), 400
+
+    if after_order is not None:
+        after_order = int(after_order)
+        Timeline.query.filter_by(event_id=event_id) \
+            .filter(Timeline.order > after_order) \
+            .update({Timeline.order: Timeline.order + 1})
+        
+        new_order = after_order + 1
+    else:
+        count = Timeline.query.filter_by(event_id=event_id).count()
+        new_order = count + 1
 
     step = Timeline(
-        step=data["step"],
-        order=count + 1,
+        step=step_text,
+        order=new_order,
         event_id=event_id
     )
 
     db.session.add(step)
     db.session.commit()
 
-    return jsonify({
-        "id": step.id,
-        "step": step.step,
-        "order": step.order
-    })
+    steps = Timeline.query.filter_by(event_id=event_id).order_by(Timeline.order).all()
+    return jsonify([{
+        "id": s.id,
+        "step": s.step,
+        "order": s.order
+    } for s in steps])
 
 
 @csrf.exempt

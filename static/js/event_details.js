@@ -109,7 +109,6 @@ function openModal(modal)  { modal.classList.remove("hidden"); }
 function closeModal(modal) { modal.classList.add("hidden"); }
 
 openTaskModalBtn.addEventListener("click",        () => openModal(taskModal));
-openTimelineModalBtn.addEventListener("click",    () => openModal(timelineModal));
 openParticipantModalBtn.addEventListener("click", () => openModal(participantModal));
 openPollModalBtn.addEventListener("click",        () => openModal(pollModal));
 
@@ -236,19 +235,57 @@ async function loadTimeline() {
   renderTimeline(steps);
 }
 
+
+openTimelineModalBtn.addEventListener("click", async () => {
+  const res = await fetch(`/event/${EVENT_ID}/timeline`);
+  const steps = await res.json();
+  
+  const positionSelect = document.getElementById("timelinePosition");
+  positionSelect.innerHTML = '<option value="end">At the end</option>';
+  
+  steps.forEach(s => {
+    const option = document.createElement("option");
+    option.value = s.order;
+    option.textContent = `After step ${s.order}: ${s.step.substring(0, 30)}${s.step.length > 30 ? '...' : ''}`;
+    positionSelect.appendChild(option);
+  });
+  
+  openModal(timelineModal);
+});
+
 addTimelineBtn.addEventListener("click", async () => {
   if (!CAN_EDIT) return;
 
   const step = timelineStepInput.value.trim();
   if (!step) return;
-  await fetch(`/event/${EVENT_ID}/timeline`, {
+  
+  const positionSelect = document.getElementById("timelinePosition");
+  const afterOrder = positionSelect.value === "end" ? null : parseInt(positionSelect.value);
+  
+  const res = await csrfFetch(`/event/${EVENT_ID}/timeline`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({ step })
+    body:    JSON.stringify({ 
+      step: step,
+      after_order: afterOrder
+    })
   });
+  
+  const data = await res.json();
+  
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+  
+  if (Array.isArray(data)) {
+    renderTimeline(data);
+  } else {
+    loadTimeline();
+  }
+  
   timelineStepInput.value = "";
   closeModal(timelineModal);
-  loadTimeline();
 });
 
 /* PARTICIPANTS */
