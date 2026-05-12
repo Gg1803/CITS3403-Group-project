@@ -1,5 +1,11 @@
 // Get the event ID from the body data attribute
 const EVENT_ID = document.body.dataset.eventId;
+const CURRENT_ROLE = document.body.dataset.currentRole || "";
+const CAN_EDIT = document.body.dataset.canEdit === "true";
+const CAN_MANAGE_PARTICIPANTS = document.body.dataset.canManageParticipants === "true";
+const CAN_ASSIGN_ROLES = document.body.dataset.canAssignRoles === "true";
+const CAN_VOTE = document.body.dataset.canVote === "true";
+const IS_PUBLIC = document.body.dataset.isPublic === "true";
 
 // DOM refs (unchanged)
 const eventTitleInput        = document.getElementById("eventTitle");
@@ -45,6 +51,24 @@ let polls = [];
 let currentPollIndex = 0;
 
 function goTo(page) { window.location.href = page; }
+
+function formatRole(role) {
+  if (role === "co_host") return "co-host";
+  return role || "participant";
+}
+
+function applyPermissionUi() {
+  if (!CAN_EDIT) {
+    document.querySelector(".edit-strip").classList.add("hidden");
+    openTaskModalBtn.classList.add("hidden");
+    openTimelineModalBtn.classList.add("hidden");
+    openPollModalBtn.classList.add("hidden");
+  }
+
+  if (!CAN_MANAGE_PARTICIPANTS) {
+    openParticipantModalBtn.classList.add("hidden");
+  }
+}
 
 function formatDate(dateString) {
   if (!dateString) return "-";
@@ -119,24 +143,32 @@ function renderTasks(tasks) {
   tasks.forEach(task => {
     const item = document.createElement("div");
     item.className = `item-card ${task.completed ? "completed-task" : ""}`;
+    const taskActions = CAN_EDIT ? `
+      <div class="item-actions">
+        <button class="icon-btn task-complete" type="button">${task.completed ? "Undo" : "Done"}</button>
+        <button class="remove-btn task-delete" type="button">Remove</button>
+      </div>
+    ` : "";
+
     item.innerHTML = `
       <div class="item-main">
         <div class="item-title">${task.name}</div>
         <div class="item-subtitle">Assigned to: ${task.assigned_to || "Not assigned"}</div>
       </div>
-      <div class="item-actions">
-        <button class="icon-btn task-complete" type="button">${task.completed ? "Undo" : "Done"}</button>
-        <button class="remove-btn task-delete" type="button">Remove</button>
-      </div>
+      ${taskActions}
     `;
-    item.querySelector(".task-complete").addEventListener("click", async () => {
-      await csrfFetch(`/tasks/${task.id}/toggle`, { method: "POST" });
-      loadTasks();
-    });
-    item.querySelector(".task-delete").addEventListener("click", async () => {
-      await csrfFetch(`/tasks/${task.id}`, { method: "DELETE" });
-      loadTasks();
-    });
+
+    if (CAN_EDIT) {
+      item.querySelector(".task-complete").addEventListener("click", async () => {
+        await fetch(`/tasks/${task.id}/toggle`, { method: "POST" });
+        loadTasks();
+      });
+      item.querySelector(".task-delete").addEventListener("click", async () => {
+        await fetch(`/tasks/${task.id}`, { method: "DELETE" });
+        loadTasks();
+      });
+    }
+
     taskList.appendChild(item);
   });
   updateTaskProgress(tasks);
@@ -149,10 +181,12 @@ async function loadTasks() {
 }
 
 addTaskBtn.addEventListener("click", async () => {
+  if (!CAN_EDIT) return;
+
   const name       = taskNameInput.value.trim();
   const assignedTo = taskAssignedToInput.value.trim();
   if (!name) return;
-  await csrfFetch(`/event/${EVENT_ID}/tasks`, {
+  await fetch(`/event/${EVENT_ID}/tasks`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
     body:    JSON.stringify({ name, assigned_to: assignedTo })
@@ -173,17 +207,25 @@ function renderTimeline(steps) {
   steps.forEach((step, index) => {
     const item = document.createElement("div");
     item.className = "timeline-item";
-    item.innerHTML = `
-      <div class="timeline-circle">${index + 1}</div>
-      <div class="timeline-text">${step.step}</div>
+    const timelineActions = CAN_EDIT ? `
       <div class="item-actions">
         <button class="remove-btn timeline-delete" type="button">Remove</button>
       </div>
+    ` : "";
+
+    item.innerHTML = `
+      <div class="timeline-circle">${index + 1}</div>
+      <div class="timeline-text">${step.step}</div>
+      ${timelineActions}
     `;
-    item.querySelector(".timeline-delete").addEventListener("click", async () => {
-      await csrfFetch(`/timeline/${step.id}`, { method: "DELETE" });
-      loadTimeline();
-    });
+
+    if (CAN_EDIT) {
+      item.querySelector(".timeline-delete").addEventListener("click", async () => {
+        await fetch(`/timeline/${step.id}`, { method: "DELETE" });
+        loadTimeline();
+      });
+    }
+
     timelineList.appendChild(item);
   });
 }
@@ -195,9 +237,11 @@ async function loadTimeline() {
 }
 
 addTimelineBtn.addEventListener("click", async () => {
+  if (!CAN_EDIT) return;
+
   const step = timelineStepInput.value.trim();
   if (!step) return;
-  await csrfFetch(`/event/${EVENT_ID}/timeline`, {
+  await fetch(`/event/${EVENT_ID}/timeline`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
     body:    JSON.stringify({ step })
@@ -208,54 +252,255 @@ addTimelineBtn.addEventListener("click", async () => {
 });
 
 /* PARTICIPANTS */
-function renderParticipants(participants) {
+function renderParticipants(participants, invitations = []) {
   participantList.innerHTML = "";
+
   displayParticipantCount.textContent =
     `${participants.length} participant${participants.length !== 1 ? "s" : ""}`;
 
-  if (participants.length === 0) {
-    participantList.innerHTML = `<p class="empty-state">No participants have joined yet.</p>`;
+  if (participants.length === 0 && invitations.length === 0) {
+    participantList.innerHTML =
+      `<p class="empty-state">No participants have joined yet.</p>`;
     return;
   }
   participants.forEach(p => {
     const item = document.createElement("div");
     item.className = "item-card";
+
+    const roleLabel = formatRole(p.role);
+
+    const roleAction =
+      CAN_ASSIGN_ROLES && p.role !== "host" && IS_PUBLIC
+        ? `
+          <button class="icon-btn participant-role" type="button">
+            ${p.role === "co_host"
+              ? "Make Participant"
+              : "Make Co-host"}
+          </button>
+        `
+        : "";
+
+    const removeAction =
+      CAN_MANAGE_PARTICIPANTS && p.role !== "host"
+        ? `
+          <button class="remove-btn participant-delete" type="button">
+            Remove
+          </button>
+        `
+        : "";
+
+    const participantActions =
+      roleAction || removeAction
+        ? `
+          <div class="item-actions">
+            ${roleAction}
+            ${removeAction}
+          </div>
+        `
+        : "";
+
     item.innerHTML = `
       <div class="item-main">
         <div class="item-title">${p.username}</div>
-        <div class="item-subtitle">Participant</div>
+
+        <div class="item-subtitle">
+          <span class="role-tag role-${p.role}">
+            ${roleLabel}
+          </span>
+        </div>
       </div>
-      <div class="item-actions">
-        <button class="remove-btn participant-delete" type="button">Remove</button>
-      </div>
+
+      ${participantActions}
     `;
-    item.querySelector(".participant-delete").addEventListener("click", async () => {
-      await csrfFetch(`/participants/${p.id}`, { method: "DELETE" });
-      loadParticipants();
-    });
+
+    /* Change role */
+    const roleBtn = item.querySelector(".participant-role");
+
+    if (roleBtn) {
+      roleBtn.addEventListener("click", async () => {
+        const role =
+          p.role === "co_host"
+            ? "participant"
+            : "co_host";
+
+        const res = await fetch(`/participants/${p.id}/role`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ role })
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+
+        loadParticipants();
+      });
+    }
+
+    /* Remove participant */
+    const deleteBtn = item.querySelector(".participant-delete");
+
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", async () => {
+        const res = await fetch(`/participants/${p.id}`, {
+          method: "DELETE"
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+
+        loadParticipants();
+      });
+    }
+
+    participantList.appendChild(item);
+  });
+
+  /* Pending invitatons */
+  invitations.forEach(invite => {
+    const item = document.createElement("div");
+    item.className = "item-card";
+
+    const discardAction = CAN_MANAGE_PARTICIPANTS
+      ? `
+        <div class="item-actions">
+          <button class="remove-btn invitation-delete" type="button">
+            Discard
+          </button>
+        </div>
+      `
+      : "";
+
+    item.innerHTML = `
+      <div class="item-main">
+        <div class="item-title">${invite.username}</div>
+
+        <div class="item-subtitle">
+          <span
+            class="role-tag"
+            style="background:#fef3c7; color:#92400e;"
+          >
+            pending
+          </span>
+        </div>
+      </div>
+
+      ${discardAction}
+    `;
+
+    const deleteBtn = item.querySelector(".invitation-delete");
+
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", async () => {
+        const res = await fetch(`/invitations/${invite.id}`, {
+          method: "DELETE"
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+
+        loadParticipants();
+      });
+    }
+
     participantList.appendChild(item);
   });
 }
 
 async function loadParticipants() {
-  const res          = await fetch(`/event/${EVENT_ID}/participants`);
-  const participants = await res.json();
-  renderParticipants(participants);
+  const [participantsRes, invitationsRes] = await Promise.all([
+    fetch(`/event/${EVENT_ID}/participants`),
+    fetch(`/event/${EVENT_ID}/pending-invitations`)
+  ]);
+
+  const participants = await participantsRes.json();
+  const invitations  = await invitationsRes.json();
+
+  renderParticipants(participants, invitations);
 }
 
+/* ── User search dropdown ─────────────────────────────────────── */
+const searchDropdown = document.getElementById("userSearchDropdown");
+let searchTimer = null;
+let selectedEmail = "";
+
+participantEmailInput.addEventListener("input", () => {
+  const q = participantEmailInput.value.trim();
+  selectedEmail = "";  // reset selection on new input
+  clearTimeout(searchTimer);
+
+  if (q.length < 2) {
+    searchDropdown.style.display = "none";
+    searchDropdown.innerHTML = "";
+    return;
+  }
+
+  searchTimer = setTimeout(async () => {
+    const res   = await fetch(`/users/search?q=${encodeURIComponent(q)}`);
+    const users = await res.json();
+
+    if (users.length === 0) {
+      searchDropdown.style.display = "none";
+      return;
+    }
+
+    searchDropdown.innerHTML = users.map(u => `
+      <div class="search-result-item" data-email="${u.email}"
+           style="padding:10px 14px; cursor:pointer; font-size:0.88rem;
+                  border-bottom:1px solid #f1f5f9; color:#1f2933;">
+        <strong>${u.username}</strong>
+        <span style="color:#6b7280; margin-left:6px;">${u.email}</span>
+      </div>
+    `).join("");
+
+    searchDropdown.style.display = "block";
+
+    searchDropdown.querySelectorAll(".search-result-item").forEach(item => {
+      item.addEventListener("mouseenter", () => item.style.background = "#f1f5f9");
+      item.addEventListener("mouseleave", () => item.style.background = "");
+      item.addEventListener("click", () => {
+        selectedEmail = item.dataset.email;
+        participantEmailInput.value = selectedEmail;
+        searchDropdown.style.display = "none";
+      });
+    });
+  }, 300);
+});
+
+// Close dropdown on outside click
+document.addEventListener("click", e => {
+  if (!participantEmailInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+    searchDropdown.style.display = "none";
+  }
+});
+
 addParticipantBtn.addEventListener("click", async () => {
-  const email = participantEmailInput.value.trim();
+  if (!CAN_MANAGE_PARTICIPANTS) return;
+
+  const email = (selectedEmail || participantEmailInput.value).trim();
   if (!email) return;
 
   addParticipantBtn.disabled = true;
   addParticipantBtn.textContent = "Sending...";
 
-  const res  = await csrfFetch(`/event/${EVENT_ID}/invitations`, {
+  const res  = await fetch(`/event/${EVENT_ID}/invitations`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
     body:    JSON.stringify({ email })
   });
   const data = await res.json();
+
   addParticipantBtn.disabled = false;
   addParticipantBtn.textContent = "Invite";
 
@@ -263,9 +508,12 @@ addParticipantBtn.addEventListener("click", async () => {
     alert(data.error);
     return;
   }
+
   participantEmailInput.value = "";
+  selectedEmail = "";
+  searchDropdown.style.display = "none";
   closeModal(participantModal);
-  alert("Invitation sent. The user will join this event after accepting it.");
+  loadParticipants();
 });
 
 /* Voters popup in poll */
@@ -356,6 +604,11 @@ function renderPoll() {
 
     const el = document.createElement("div");
     el.className = "poll-option-display";
+    const voteButton = CAN_VOTE ? `
+      <button class="vote-btn vote-option" type="button"
+              data-poll-id="${poll.id}" data-option-id="${option.id}">Vote</button>
+    ` : "";
+
     el.innerHTML = `
       <div class="poll-option-top">
         <span class="poll-option-name">${option.text}</span>
@@ -369,8 +622,7 @@ function renderPoll() {
       <div class="poll-bar">
         <div class="poll-fill color-vote" style="width:${visiblePct}%"></div>
       </div>
-      <button class="vote-btn vote-option" type="button"
-              data-poll-id="${poll.id}" data-option-id="${option.id}">Vote</button>
+      ${voteButton}
     `;
     optList.appendChild(el);
   });
@@ -382,7 +634,7 @@ function renderPoll() {
     btn.addEventListener("click", async () => {
       const pollId   = btn.dataset.pollId;
       const optionId = btn.dataset.optionId;
-      const res      = await csrfFetch(`/polls/${pollId}/vote/${optionId}`, { method: "POST" });
+      const res      = await fetch(`/polls/${pollId}/vote/${optionId}`, { method: "POST" });
       const data     = await res.json();
       if (data.error) { alert(data.error); return; }
       await loadPolls();
@@ -436,6 +688,8 @@ addPollOptionFieldBtn.addEventListener("click", () => {
 });
 
 createPollBtn.addEventListener("click", async () => {
+  if (!CAN_EDIT) return;
+
   const question = pollQuestionInput.value.trim();
   const options  = Array.from(document.querySelectorAll(".poll-option-input"))
     .map(i => i.value.trim()).filter(Boolean);
@@ -443,7 +697,7 @@ createPollBtn.addEventListener("click", async () => {
     alert("Please enter a question and at least 2 options.");
     return;
   }
-  await csrfFetch(`/event/${EVENT_ID}/polls`, {
+  await fetch(`/event/${EVENT_ID}/polls`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
     body:    JSON.stringify({ question, options })
@@ -471,7 +725,9 @@ eventLocationInput.addEventListener("input", updateTopInfo);
 
 /* ── Save event details ───────────────────────────────────────── */
 async function saveEvent() {
-  const res = await csrfFetch(`/event/${EVENT_ID}`, {
+  if (!CAN_EDIT) return;
+
+  const res = await fetch(`/event/${EVENT_ID}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -492,16 +748,15 @@ async function saveEvent() {
     updateTopInfo();
     alert("Event saved!");
   } else {
-    alert("Failed to save.");
+    alert(data.error || "Failed to save.");
   }
 }
 
 /* Init - load everything from DB on page load */
 document.addEventListener("DOMContentLoaded", () => {
-  const eventDateEl = document.getElementById("eventDate");
-  if (eventDateEl) {
-    eventDateEl.min = new Date().toISOString().split("T")[0];
-  }
+  const today = new Date().toISOString().split("T")[0];
+  eventDateInput.min = today;
+  applyPermissionUi();
   updateTopInfo();
   loadTasks();
   loadTimeline();
