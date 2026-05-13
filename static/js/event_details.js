@@ -260,12 +260,14 @@ addTimelineBtn.addEventListener("click", async () => {
   if (!step) return;
   
   const positionSelect = document.getElementById("timelinePosition");
-  const afterOrder = positionSelect.value === "end" ? null : parseInt(positionSelect.value);
+  const afterOrder = positionSelect.value === "end"
+    ? null
+    : parseInt(positionSelect.value);
   
-  const res = await csrfFetch(`/event/${EVENT_ID}/timeline`, {
-    method:  "POST",
+  const res = await fetch(`/event/${EVENT_ID}/timeline`, {
+    method: "POST",
     headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({ 
+    body: JSON.stringify({ 
       step: step,
       after_order: afterOrder
     })
