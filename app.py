@@ -946,17 +946,21 @@ def update_profile():
     })
 
 def send_password_change_email(user):
+    print("PASSWORD EMAIL FUNCTION CALLED")
     try:
         token = os.environ.get("MAILTRAP_API_TOKEN")
 
         if not token:
-            app.logger.error("MAILTRAP_API_TOKEN is missing from environment variables.")
+            print("MAILTRAP_API_TOKEN missing")
             return False
 
         mail = mt.Mail(
-            sender=mt.Address(email="hello@demomailtrap.co", name="Eventure"),
+            sender=mt.Address(
+                email="hello@demomailtrap.co",
+                name="Eventure"
+            ),
             to=[mt.Address(email=user.email)],
-            subject="Password Changed",
+            subject="Your Eventure password was changed",
             text=f"""
 Hi {user.username},
 
@@ -973,12 +977,15 @@ Eventure Team
         )
 
         client = mt.MailtrapClient(token=token)
-        client.send(mail)
+
+        response = client.send(mail)
+
+        print("MAIL SENT:", response)
 
         return True
 
     except Exception as e:
-        print("MAIL ERROR:", e)
+        print("MAIL ERROR:", repr(e))
         return False
     
 # AJAX - PASSWORD UPDATE
