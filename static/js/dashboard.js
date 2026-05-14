@@ -90,6 +90,11 @@ async function submitEvent() {
     return;
   }
 
+  if (desc.length > 120) {
+    alert("Description must be 120 characters or less.");
+    return;
+  }
+
   const response = await csrfFetch("/create-event", {
     method:  "POST",
     headers: { "Content-Type": "application/json" },

@@ -428,12 +428,17 @@ def create_event():
     if event_type == "Custom":
         event_type = data.get("customType") or "Custom"
 
+    description = data.get("description", "")
+
+    if len(description) > 120:
+        return jsonify({"error": "Description too long (max 120 characters)"}), 400
+
     new_event = Event(
         title=data.get("title"),
         event_type=event_type,
         event_date=datetime.strptime(data.get("date"), "%Y-%m-%d"),
         location=data.get("location"),
-        description=data.get("description", ""),
+        description=description,
         is_public=data.get("is_public", False),
         user_id=current_user.id
     )
