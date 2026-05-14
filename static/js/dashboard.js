@@ -49,13 +49,18 @@ function updateEventCount() {
 }
 
 function updateCharCount() {
-  const desc    = document.getElementById("desc");
+  const desc = document.getElementById("desc");
   const counter = document.getElementById("charCount");
-  const max     = 120;
-  const len     = desc.value.length;
-  counter.innerText   = `${len}/${max}`;
-  counter.style.color = len >= max ? "#ef4444" : "#9ca3af";
-  if (len > max) desc.value = desc.value.substring(0, max);
+  const max = 120;
+
+  if (desc.value.length > max) {
+    desc.value = desc.value.slice(0, max);
+  }
+
+  const len = desc.value.length;
+
+  counter.innerText = `${len}/${max}`;
+  counter.style.color = len === max ? "#ef4444" : "#9ca3af";
 }
 
 function handleTypeChange() {
@@ -87,6 +92,11 @@ async function submitEvent() {
 
   if (!title || !date || !location) {
     alert("Please fill all required fields.");
+    return;
+  }
+
+  if (desc.length > 120) {
+    alert("Description must be 120 characters or less.");
     return;
   }
 

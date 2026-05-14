@@ -43,9 +43,9 @@
     </div>
 
     <!-- SECTION 1: MY CREATED EVENTS -->
-    <div style="margin-bottom: 32px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <h2 style="font-size:1.2rem; font-weight:800; color:#1f2933;">Created</h2>
+    <div class="section-block">
+      <div class="section-header">
+        <h2 class="section-title">Created</h2>
         <div class="filter-group">
           <div class="filter-icon"><i data-lucide="sliders-horizontal"></i></div>
           <select id="ownedTypeFilter" onchange="filterOwned()">
@@ -99,7 +99,7 @@
           </div>
         </div>
         {% else %}
-        <p style="color:#9ca3af;">No events created yet.</p>
+        <p class="empty-text">No events created yet.</p>
         {% endfor %}
       </div>
     </div>
@@ -107,7 +107,7 @@
     <!-- SECTION 2: JOINED EVENTS -->
     <div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <h2 style="font-size:1.2rem; font-weight:800; color:#1f2933;">Joined</h2>
+        <h2 class="section-title">Joined</h2>
         <div class="filter-group">
           <div class="filter-icon"><i data-lucide="sliders-horizontal"></i></div>
           <select id="joinedTypeFilter" onchange="filterJoined()">
@@ -166,7 +166,7 @@
           </div>
         </div>
         {% else %}
-        <p style="color:#9ca3af;">No joined events yet.</p>
+        <p class="empty-text">No joined events yet.</p>
         {% endfor %}
       </div>
     </div>
@@ -210,13 +210,13 @@
         <span id="charCount" class="char-count">0/120</span>
       </div>
 
-      <label style="display:flex; align-items:center; justify-content:space-between;">
-        Public Event
+      <div class="toggle-row">
+        <span>Public Event</span>
         <label class="switch">
           <input type="checkbox" id="isPublic">
           <span class="slider"></span>
         </label>
-      </label>
+      </div>
 
       <button class="create-btn" onclick="submitEvent()">Create</button>
     </div>

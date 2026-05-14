@@ -428,12 +428,17 @@ def create_event():
     if event_type == "Custom":
         event_type = data.get("customType") or "Custom"
 
+    description = data.get("description", "")
+
+    if len(description) > 120:
+        return jsonify({"error": "Description too long (max 120 characters)"}), 400
+
     new_event = Event(
         title=data.get("title"),
         event_type=event_type,
         event_date=datetime.strptime(data.get("date"), "%Y-%m-%d"),
         location=data.get("location"),
-        description=data.get("description", ""),
+        description=description,
         is_public=data.get("is_public", False),
         user_id=current_user.id
     )
@@ -772,7 +777,8 @@ def get_polls(event_id):
         "options": [{
             "id": option.id,
             "text": option.text,
-            "votes": len(option.votes)
+            "votes": len(option.votes),
+            "user_voted": any(v.user_id == current_user.id for v in option.votes)
         } for option in poll.options]
     } for poll in polls])
 
@@ -831,6 +837,35 @@ def vote(poll_id, option_id):
     vote_record = Vote(user_id=current_user.id, option_id=option_id)
 
     db.session.add(vote_record)
+    db.session.commit()
+
+    return jsonify({
+        "option_id": option_id,
+        "votes": len(option.votes)
+    })
+
+
+@csrf.exempt
+@app.route("/polls/<int:poll_id>/unvote/<int:option_id>", methods=["POST"])
+@login_required
+def unvote(poll_id, option_id):
+    option = PollOption.query.get_or_404(option_id)
+
+    if option.poll_id != poll_id:
+        return jsonify({"error": "Invalid poll option"}), 400
+
+    if not can_vote_in_event(option.poll.event):
+        return permission_denied("Only participants can vote")
+
+    existing = Vote.query.filter_by(
+        user_id=current_user.id,
+        option_id=option_id
+    ).first()
+
+    if not existing:
+        return jsonify({"error": "You have not voted for this option"}), 400
+
+    db.session.delete(existing)
     db.session.commit()
 
     return jsonify({

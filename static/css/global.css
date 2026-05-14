@@ -108,3 +108,21 @@ body {
 .nav-icons .nav-active i {
   color: #4f8cff;
 }
+
+/* Responsive */
+@media (max-width: 768px) {
+
+  .topbar {
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .nav-icons {
+    gap: 14px;
+  }
+
+  .logo-text {
+    font-size: 1.1rem;
+  }
+}
