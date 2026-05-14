@@ -645,7 +645,11 @@ function renderPoll() {
     el.className = "poll-option-display";
     const voteButton = CAN_VOTE ? `
       <button class="vote-btn vote-option" type="button"
-              data-poll-id="${poll.id}" data-option-id="${option.id}">Vote</button>
+              data-poll-id="${poll.id}"
+              data-option-id="${option.id}"
+              data-voted="${option.user_voted}">
+        ${option.user_voted ? "Unvote" : "Vote"}
+      </button>
     ` : "";
 
     el.innerHTML = `
@@ -673,9 +677,20 @@ function renderPoll() {
     btn.addEventListener("click", async () => {
       const pollId   = btn.dataset.pollId;
       const optionId = btn.dataset.optionId;
-      const res      = await fetch(`/polls/${pollId}/vote/${optionId}`, { method: "POST" });
-      const data     = await res.json();
-      if (data.error) { alert(data.error); return; }
+      const hasVoted = btn.dataset.voted === "true";
+
+      const url = hasVoted
+        ? `/polls/${pollId}/unvote/${optionId}`
+        : `/polls/${pollId}/vote/${optionId}`;
+
+      const res  = await fetch(url, { method: "POST" });
+      const data = await res.json();
+
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+
       await loadPolls();
     });
   });
