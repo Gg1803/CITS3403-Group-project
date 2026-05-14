@@ -31,6 +31,12 @@
   margin-bottom: 20px;
 }
 
+.hero-top-layout {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
 .hero-label {
   font-size: 0.72rem;
   font-weight: 700;
@@ -509,6 +515,21 @@
   color: #1f2933;
 }
 
+.user-search-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+  z-index: 200;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
 .close-btn {
   width: 36px;
   height: 36px;
@@ -545,6 +566,10 @@
   border-color: #4f8cff;
   box-shadow: 0 0 0 3px rgba(79,140,255,0.12);
   background: #fff;
+}
+
+.field-relative {
+  position: relative;
 }
 
 .modal-footer {
@@ -600,3 +625,91 @@
   transition: background 0.2s;
 }
 .toggle-admin:hover { background: #bfcfff; }
+
+/* Responsive */
+@media (max-width: 900px) {
+
+  .page-wrapper {
+    padding: 20px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-poll {
+    min-height: auto;
+  }
+
+  .edit-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .save-btn {
+    grid-column: auto;
+    width: 100%;
+    justify-self: stretch;
+  }
+}
+
+@media (max-width: 600px) {
+
+  .page-wrapper {
+    padding: 16px;
+  }
+
+  .hero-card {
+    padding: 22px 18px;
+  }
+
+  .hero-title {
+    font-size: 1.5rem;
+  }
+
+  .hero-meta {
+    flex-direction: column;
+  }
+
+  .meta-pill {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: flex-start;
+  }
+
+  .edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .action-btn {
+    width: 100%;
+  }
+
+  .item-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .item-actions {
+    width: 100%;
+  }
+
+  .icon-btn,
+  .remove-btn,
+  .toggle-admin {
+    flex: 1;
+  }
+
+  .modal {
+    padding: 18px;
+  }
+
+  .poll-option-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

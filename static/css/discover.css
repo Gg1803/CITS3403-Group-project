@@ -73,6 +73,14 @@ body {
   margin-top: 2px;
 }
 
+.empty-text {
+  color: #9ca3af;
+}
+
+.hidden {
+  display: none;
+}
+
 /* CARD FOOTER */
 
 .join-btn {
@@ -142,4 +150,52 @@ body {
   padding: 2px 9px;
   margin-left: 6px;
   vertical-align: middle;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+
+  body {
+    padding: 20px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .filter-group {
+    width: 100%;
+    justify-content: space-between;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 480px) {
+
+  body {
+    padding: 16px;
+  }
+
+  .header h1 {
+    font-size: 1.7rem;
+  }
+
+  .card-footer {
+    flex-direction: column;
+  }
+
+  .view-btn,
+  .join-btn {
+    width: 100%;
+  }
+
+  .empty-state {
+    margin-top: 48px;
+    text-align: center;
+  }
 }

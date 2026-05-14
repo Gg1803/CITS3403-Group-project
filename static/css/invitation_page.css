@@ -490,3 +490,98 @@
   box-shadow: 0 4px 10px rgba(79,140,255,0.28);
 }
 .modal-accept:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Responsive */
+
+@media (max-width: 1024px) {
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .edit-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .save-btn {
+    grid-column: auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+
+  body {
+    padding: 18px;
+  }
+
+  .header,
+  .filter-footer,
+  .filter-row,
+  .hero-top,
+  .panel-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .invitation-grid,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-title,
+  .page-heading h1,
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .card-footer,
+  .footer-row-top,
+  .footer-row-bottom {
+    flex-direction: column;
+  }
+
+  .footer-row-top button,
+  .footer-row-top a,
+  .footer-row-bottom button,
+  .footer-row-bottom a {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .hero-title,
+  .page-heading h1,
+  .header h1 {
+    font-size: 1.7rem;
+  }
+
+  .meta-pill,
+  .results-pill,
+  .tab-btn {
+    font-size: 0.75rem;
+  }
+
+  .panel,
+  .summary-card,
+  .modal {
+    padding: 16px;
+  }
+}

@@ -193,3 +193,35 @@ input[type="text"]:focus {
   margin-top: 2px;
   min-height: 16px;
 }
+
+/* Responsive */
+@media (max-width: 480px) {
+
+  body {
+    padding: 16px;
+    align-items: flex-start;
+    padding-top: 32px;
+  }
+
+  .logo {
+    font-size: 2.2rem;
+  }
+
+  .logo-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .logo-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .card {
+    padding: 20px 18px 18px;
+  }
+
+  .main-button {
+    height: 48px; /* easier to tap on mobile */
+  }
+}

@@ -43,7 +43,7 @@
 
   <!-- HERO CARD -->
   <div class="hero-card" id="heroCard">
-    <div class="hero-top" style="display:flex; justify-content:space-between; align-items:flex-start;">
+    <div class="hero-top hero-top-layout">
       <div>
         <p class="hero-label">
           {{ (current_role or 'viewer')|replace('_', '-')|upper }}
@@ -247,23 +247,12 @@
       <button class="close-btn" data-close="participantModal" type="button">×</button>
     </div>
     <div class="modal-body">
-      <div class="field-group" style="position:relative;">
+      <div class="field-group field-relative">
         <label for="participantName">Search by email</label>
         <input id="participantName" type="email"
                placeholder="Start typing an email…"
                autocomplete="off" />
-        <div id="userSearchDropdown" style="
-          display:none;
-          position:absolute;
-          top:100%; left:0; right:0;
-          background:#fff;
-          border:1px solid #d1d5db;
-          border-radius:10px;
-          box-shadow:0 4px 14px rgba(0,0,0,0.10);
-          z-index:200;
-          max-height:200px;
-          overflow-y:auto;
-        "></div>
+        <div id="userSearchDropdown" class="user-search-dropdown"></div>
       </div>
     </div>
     <div class="modal-footer">
