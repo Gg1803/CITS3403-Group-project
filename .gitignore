@@ -13,7 +13,12 @@ env/
 .pytest_cache/
 .selenium-cache/
 tests/seleniumtest/.wdm/
+
+# Selenium / Chrome temp profiles
 chrome-test.*/
+**/chrome-test.*/
+tmp*/
+*.log
 
 # Database
 instance/
