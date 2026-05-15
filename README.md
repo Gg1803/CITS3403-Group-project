@@ -55,25 +55,64 @@ The project includes:
 * Unit tests for backend functionality
 * Selenium tests simulating real user interactions
 
+### Before running tests
+
+Make sure:
+
+* No existing Flask server is already running on port 5000
+* The database has been seeded:
+
+```bash
+python seed.py
+```
+
+* Google Chrome is installed locally
+* All required packages are installed:
+* 
+
 ### Run all tests
+
+#### macOS / Linux
 
 ```bash
 PYTHONPATH=. python -m pytest
 ```
 
+#### Windows PowerShell
+
+```powershell
+$env:PYTHONPATH="."; python -m pytest
+```
+
 ### Run unit tests only
 
+#### macOS / Linux
+
 ```bash
-PYTHONPATH=. python -m pytest tests/unittest
+PYTHONPATH=. python -m pytest tests/unittest -v
+```
+
+#### Windows PowerShell
+
+```powershell
+$env:PYTHONPATH="."; python -m pytest tests/unittest -v
 ```
 
 ### Run Selenium tests
 
-The Selenium tests start a live Flask test server automatically. They require
+The Selenium tests automatically start a live Flask test server and require
 Google Chrome to be installed locally.
 
+#### macOS / Linux
+
 ```bash
-PYTHONPATH=. python -m pytest tests/seleniumtest
+PYTHONPATH=. python -m pytest tests/seleniumtest -v
+```
+
+#### Windows PowerShell
+
+```powershell
+$env:PYTHONPATH="."; python -m pytest tests/seleniumtest -v
 ```
 
 ---
