@@ -68,7 +68,6 @@ python seed.py
 
 * Google Chrome is installed locally
 * All required packages are installed:
-* 
 
 ### Run all tests
 
