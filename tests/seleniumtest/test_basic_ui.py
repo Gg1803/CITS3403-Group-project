@@ -1,16 +1,17 @@
-import time
+import uuid
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 
-def wait_for_page(driver):
-    return WebDriverWait(driver, 8)
+def wait_for_page(driver, timeout=10):
+    return WebDriverWait(driver, timeout)
 
 
 def create_and_login_user(driver, live_server_url):
-    username = f"seleniumuser{int(time.time())}"
+    # Per-test DB is empty, but use uuid to be defensive against any sharing.
+    username = f"sel_{uuid.uuid4().hex[:10]}"
     email = f"{username}@example.com"
     password = "Password123"
 
@@ -28,15 +29,21 @@ def create_and_login_user(driver, live_server_url):
     driver.find_element(By.ID, "signupEmail").send_keys(email)
     driver.find_element(By.ID, "signupPassword").send_keys(password)
 
-    driver.find_element(By.CSS_SELECTOR, "#signupForm button[type='submit']").click()
+    signup_submit = driver.find_element(
+        By.CSS_SELECTOR, "#signupForm button[type='submit']"
+    )
+    signup_submit.click()
 
-    wait_for_page(driver).until(EC.url_contains("/login"))
+    # The login page initially has the URL "/login", so a plain url_contains("/login")
+    # would be satisfied IMMEDIATELY (before the form POST completes). We wait for the
+    # submit button to actually go stale (page navigated) AND for the redirect
+    # target "/login?email=..." which only appears after a successful signup.
+    wait_for_page(driver).until(EC.staleness_of(signup_submit))
+    wait_for_page(driver).until(
+        lambda d: "/login" in d.current_url and "email=" in d.current_url
+    )
 
     driver.get(f"{live_server_url}/login")
-
-    wait_for_page(driver).until(
-        EC.element_to_be_clickable((By.ID, "loginBtn"))
-    ).click()
 
     wait_for_page(driver).until(
         EC.visibility_of_element_located((By.ID, "loginEmail"))
@@ -48,8 +55,14 @@ def create_and_login_user(driver, live_server_url):
     driver.find_element(By.ID, "loginPassword").clear()
     driver.find_element(By.ID, "loginPassword").send_keys(password)
 
-    driver.find_element(By.CSS_SELECTOR, "#loginForm button[type='submit']").click()
+    login_submit = driver.find_element(
+        By.CSS_SELECTOR, "#loginForm button[type='submit']"
+    )
+    login_submit.click()
 
+    # Same trick: wait for the login button to detach from the DOM before checking
+    # the post-login URL, otherwise the wait can race with the POST request.
+    wait_for_page(driver).until(EC.staleness_of(login_submit))
     wait_for_page(driver).until(
         lambda d: "/dashboard" in d.current_url or "My Events" in d.page_source
     )
